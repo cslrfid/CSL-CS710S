@@ -108,7 +108,7 @@
                     NSDictionary * options = [NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:FALSE], CBCentralManagerScanOptionAllowDuplicatesKey, nil];
                     [bleDeviceList removeAllObjects];
                     [deviceListName removeAllObjects];
-                    [manager scanForPeripheralsWithServices:[NSArray arrayWithObject:[CBUUID UUIDWithString:@"9800"]] options:options];
+                    [manager scanForPeripheralsWithServices:[NSArray arrayWithObject:[CBUUID UUIDWithString:@"9802"]] options:options];
                     connectStatus=SCANNING;
                     [self.delegate didInterfaceChangeConnectStatus:self]; //this will call the method for connections status chagnes.
                 }
@@ -353,7 +353,7 @@
     }
     NSLog(@"didDiscoverCharacteristicsForService service UUID=%@", service.UUID);
     
-    if([service.UUID isEqual:[CBUUID UUIDWithString:@"9800"]])
+    if([service.UUID isEqual:[CBUUID UUIDWithString:@"9802"]])
     {
         for (CBCharacteristic * characteristic in service.characteristics)
         {
