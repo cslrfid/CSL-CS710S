@@ -327,7 +327,7 @@
         NSLog(@"Service found with UUID: %@", service.UUID.UUIDString);
         
         // for the CSL reader UUID
-        if([service.UUID isEqual:[CBUUID UUIDWithString:@"9800"]])
+        if([service.UUID isEqual:[CBUUID UUIDWithString:@"9802"]])
         {
             /* CSL Characterister UUID  - downlink and uplink respectively */
             [bleDevice discoverCharacteristics:[NSArray arrayWithObjects:[CBUUID UUIDWithString:@"9900"], [CBUUID UUIDWithString:@"9901"],  nil] forService:service];
