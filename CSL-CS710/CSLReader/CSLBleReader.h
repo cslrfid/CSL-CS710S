@@ -147,6 +147,14 @@ Insertion/update of tag data is based on binary searching algorithm for better e
 */
 + (NSString*) convertDataToHexString:(NSData*) data;
 /**
+ Static method that converts 16 bit RSSI data to actual value
+ 
+ @param high_byte It holds high byte of the RSSI value
+ @param low_byte It holds low byte of the RSSI value
+ @return dobule RSSI in dBuV
+ */
++ (double)decodeRSSI:(Byte)high_byte lowByte:(Byte) low_byte;
+/**
  initialization selector that:
  - call init selector of the super class CSLBleInterface
  - initialize tag count properties

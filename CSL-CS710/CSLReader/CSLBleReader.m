@@ -1662,7 +1662,7 @@
     recvPacket=((CSLBlePacket *)[cmdRespQueue deqObject]);
     if (((Byte*)[recvPacket.payload bytes])[4] == 0x14 && ((Byte*)[recvPacket.payload bytes])[5] == 0x71 &&
         ((Byte*)[recvPacket.payload bytes])[6] == rfidFWVersion[6] && [recvPacket.payload length] == 41) {
-        *versionInfo = [[NSString alloc] initWithData:[packet.payload subdataWithRange:NSMakeRange(9, 32)] encoding:NSUTF8StringEncoding];
+        *versionInfo = [[NSString alloc] initWithData:[recvPacket.payload subdataWithRange:NSMakeRange(9, 32)] encoding:NSUTF8StringEncoding];
         NSLog(@"RFID firmware: %@", *versionInfo);
     }
     else {
@@ -2729,14 +2729,14 @@
     CSLBlePacket * recvPacket;
     
     NSLog(@"----------------------------------------------------------------------");
-    NSLog(@"Start inventory...");
+    NSLog(@"Operation command 0x10A2 (SCSLRFIDStartCompactInventory)...");
     NSLog(@"----------------------------------------------------------------------");
     
     NSLog(@"Send start inventory...");
-    unsigned char cmd[] = {0x80, 0x02, 0x70, 0x01, 0x00, 0xF0, 0x0F, 0x00, 0x00, 0x00};
+    unsigned char cmd[] = {0x80, 0x02, 0x80, 0xB3, 0x10, 0xA2, ++SequenceNumber, 0x00, 0x00};
     packet.prefix=0xA7;
     packet.connection = Bluetooth;
-    packet.payloadLength=0x0A;
+    packet.payloadLength=0x09;
     packet.deviceId=RFID;
     packet.Reserve=0x82;
     packet.direction=Downlink;
@@ -2749,17 +2749,27 @@
     [self sendPackets:packet];
 
     for (int i=0;i<COMMAND_TIMEOUT_5S;i++) {  //receive data or time out in 5 seconds
-        if([cmdRespQueue count] != 0)
+        if([cmdRespQueue count] >=2)
             break;
         [NSThread sleepForTimeInterval:0.001f];
     }
     
-    if ([cmdRespQueue count] != 0) {
+    if ([cmdRespQueue count] >= 2) {
         recvPacket=((CSLBlePacket *)[cmdRespQueue deqObject]);
         if (memcmp([recvPacket.payload bytes], cmd, 2) == 0 && ((Byte *)[recvPacket.payload bytes])[2] == 0x00)
-            NSLog(@"Start inventory: OK");
+            NSLog(@"Start compact inventory: OK");
         else {
-            NSLog(@"Start inventory: FAILED");
+            NSLog(@"Start compact inventory: FAILED");
+            connectStatus=CONNECTED;
+            [self.delegate didInterfaceChangeConnectStatus:self]; //this will call the method for connections status chagnes.
+            return false;
+        }
+        
+        recvPacket=((CSLBlePacket *)[cmdRespQueue deqObject]);
+        if (memcmp([recvPacket.payload bytes]+4, cmd+4, 2) == 0 && ((Byte *)[recvPacket.payload bytes])[6] == cmd[6])
+            NSLog(@"Start compact inventory: OK");
+        else {
+            NSLog(@"Start compact inventory: FAILED");
             connectStatus=CONNECTED;
             [self.delegate didInterfaceChangeConnectStatus:self]; //this will call the method for connections status chagnes.
             return false;
@@ -2816,13 +2826,13 @@
         if (connectStatus==TAG_OPERATIONS)
         {
             NSLog(@"----------------------------------------------------------------------");
-            NSLog(@"Abort command for inventory...");
+            NSLog(@"Abort command (SCSLRFIDStopOperation)...");
             NSLog(@"----------------------------------------------------------------------");
             //Send abort command
-            unsigned char abortCmd[] = {0x80, 0x02, 0x40, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+            unsigned char abortCmd[] = {0x80, 0x02, 0x80, 0xB3, 0x10, 0xAE, 0x00, 0x00, 0x00};
             packet.prefix=0xA7;
             packet.connection = Bluetooth;
-            packet.payloadLength=0x0A;
+            packet.payloadLength=0x09    ;
             packet.deviceId=RFID;
             packet.Reserve=0x82;
             packet.direction=Downlink;
@@ -2841,6 +2851,7 @@
 
 - (BOOL)setPowerMode:(BOOL)isLowPowerMode
 {
+    /*
     @synchronized(self) {
         if (connectStatus!=CONNECTED)
         {
@@ -3004,6 +3015,7 @@
     
     connectStatus=CONNECTED;
     [self.delegate didInterfaceChangeConnectStatus:self]; //this will call the method for connections status chagnes.
+    */
     return TRUE;
 }
 
@@ -3099,6 +3111,9 @@
                 //decoding commands
                 if ([rfidPacketBufferInHexString length] >= 18) //9 bytes -> 8100 + 51E2 + XXXX (command code) + XX (seq #) + XXXX (len. of payload)
                 {
+                    
+                    datalen=((Byte *)[rfidPacketBuffer bytes])[8] + (((((Byte *)[rfidPacketBuffer bytes])[7] << 8) & 0xFF00));
+                    
                     //Read register command
                     if ([[rfidPacketBufferInHexString substringWithRange:NSMakeRange(4, 4)] isEqualToString:@"51E2"] &&
                         [[rfidPacketBufferInHexString substringWithRange:NSMakeRange(8, 4)] isEqualToString:@"1471"]) {
@@ -3124,7 +3139,7 @@
                     //Opeation command - SCSLRFIDStopOperation
                     if ([[rfidPacketBufferInHexString substringWithRange:NSMakeRange(4, 4)] isEqualToString:@"51E2"] &&
                         [[rfidPacketBufferInHexString substringWithRange:NSMakeRange(8, 4)] isEqualToString:@"10AE"]) {
-                        NSLog(@"[decodePacketsInBufferAsync] Operation commands response (10AE) recieved: %@", rfidPacketBufferInHexString);
+                        NSLog(@"[decodePacketsInBufferAsync] SCSLRFIDStopOperation command response (10AE) recieved: %@", rfidPacketBufferInHexString);
                         self.lastMacErrorCode=0x0000;
                         //return packet directly to the API for decoding
                         [cmdRespQueue enqObject:packet];
@@ -3132,9 +3147,18 @@
                         continue;
                     }
                     
-                    //CSL RFID uplink packet
-                    //csl_operation_complete
-                    datalen=((Byte *)[rfidPacketBuffer bytes])[8] + (((((Byte *)[rfidPacketBuffer bytes])[7] << 8) & 0xFF00)) ;
+                    //Opeation command - SCSLRFIDStartCompactInventory
+                    if ([[rfidPacketBufferInHexString substringWithRange:NSMakeRange(4, 4)] isEqualToString:@"51E2"] &&
+                        [[rfidPacketBufferInHexString substringWithRange:NSMakeRange(8, 4)] isEqualToString:@"10A2"]) {
+                        NSLog(@"[decodePacketsInBufferAsync] SCSLRFIDStartCompactInventory command response (10A2) recieved: %@", rfidPacketBufferInHexString);
+                        self.lastMacErrorCode=0x0000;
+                        //return packet directly to the API for decoding
+                        [cmdRespQueue enqObject:packet];
+                        [rfidPacketBuffer setLength:0];
+                        continue;
+                    }
+                    
+                    //Uplink packet 3008 (csl_operation_complete)
                     if ([[rfidPacketBufferInHexString substringWithRange:NSMakeRange(4, 4)] isEqualToString:@"49DC"] &&
                         [[rfidPacketBufferInHexString substringWithRange:NSMakeRange(8, 4)] isEqualToString:@"3008"] &&
                         ((datalen + 9) * 2) == [rfidPacketBufferInHexString length]) {
@@ -3143,12 +3167,108 @@
                         //return packet directly to the API for decoding
                         [cmdRespQueue enqObject:packet];
                         [rfidPacketBuffer setLength:0];
+                        connectStatus=CONNECTED;
+                        [self.delegate didInterfaceChangeConnectStatus:self]; //this will call the method for connections status chagnes.
                         continue;
                     }
                     
+                    //Uplink packet 3007  (csl_miscellaneous_event)
+                    datalen=((Byte *)[rfidPacketBuffer bytes])[8] + (((((Byte *)[rfidPacketBuffer bytes])[7] << 8) & 0xFF00)) ;
+                    if ([[rfidPacketBufferInHexString substringWithRange:NSMakeRange(4, 4)] isEqualToString:@"49DC"] &&
+                        [[rfidPacketBufferInHexString substringWithRange:NSMakeRange(8, 4)] isEqualToString:@"3007"] &&
+                        ((datalen + 9) * 2) == [rfidPacketBufferInHexString length]) {
+                        
+                        if ([[rfidPacketBufferInHexString substringWithRange:NSMakeRange(13 * 2, 4)] isEqualToString:@"0001"])
+                            NSLog(@"[decodePacketsInBufferAsync] CSL RFID uplink packet (csl_miscellaneous_event) recieved: keep alive");
+                        else if ([[rfidPacketBufferInHexString substringWithRange:NSMakeRange(13 * 2, 4)] isEqualToString:@"0002"])
+                            NSLog(@"[decodePacketsInBufferAsync] CSL RFID uplink packet (csl_miscellaneous_event) recieved: inventory around end");
+                        else if ([[rfidPacketBufferInHexString substringWithRange:NSMakeRange(13 * 2, 4)] isEqualToString:@"0003"])
+                            NSLog(@"[decodePacketsInBufferAsync] CSL RFID uplink packet (csl_miscellaneous_event) recieved: CRC error rate=%@", [rfidPacketBufferInHexString substringWithRange:NSMakeRange(15 * 2, 4)]);
+                        else if ([[rfidPacketBufferInHexString substringWithRange:NSMakeRange(13 * 2, 4)] isEqualToString:@"0004"])
+                            NSLog(@"[decodePacketsInBufferAsync] CSL RFID uplink packet (csl_miscellaneous_event) recieved: tag rate value=%@", [rfidPacketBufferInHexString substringWithRange:NSMakeRange(15 * 2, 4)]);
+                        
+                        [rfidPacketBuffer setLength:0];
+                        continue;
+                    }
+                    
+                    //Uplink packet 3006 (csl_tag_read_compact)
+                    if ([[rfidPacketBufferInHexString substringWithRange:NSMakeRange(4, 4)] isEqualToString:@"49DC"] &&
+                        [[rfidPacketBufferInHexString substringWithRange:NSMakeRange(8, 4)] isEqualToString:@"3006"] &&
+                        ((datalen + 9) * 2) == [rfidPacketBufferInHexString length]) {
+                        
+                        //iterate through all the tag data
+                        UInt32 timestamp = ((Byte *)[rfidPacketBuffer bytes])[12] + ((((Byte *)[rfidPacketBuffer bytes])[11] << 8) & 0x0000FF00) + ((((Byte *)[rfidPacketBuffer bytes])[10] << 16) & 0x00FF0000) + ((((Byte *)[rfidPacketBuffer bytes])[9] << 24) & 0xFF000000);
+                        
+                        int ptr=15;     //starting point of the tag data
+                        while(TRUE)
+                        {
+                            CSLBleTag* tag=[[CSLBleTag alloc] init];
+                            
+                            tag.PC =((((Byte *)[rfidPacketBuffer bytes])[ptr] << 8) & 0xFF00)+ ((Byte *)[rfidPacketBuffer bytes])[ptr+1];
+                            
+                            //for the case where we reaches to the end of the BLE packet but not the RFID response packet, where there will be partial packet to be returned from the next packet.  The partial tag data will be combined with the next packet being returned.
+                            //8100 (two bytes) + 8 bytes RFID packet header + payload length being calcuated ont he header
+                            if ((9 + datalen) > [rfidPacketBuffer length]) {
+                                //stop decoding and wait for the partial tag data to be appended in the next packet arrival
+                                NSLog(@"[decodePacketsInBufferAsync] partial tag data being returned.  Wait for next rfid response packet for complete tag data.");
+                                break;
+                            }
+                            
+                            tag.EPC=[rfidPacketBufferInHexString substringWithRange:NSMakeRange((ptr*2)+4, ((tag.PC >> 11) * 2) * 2)];
+                            int rssiPtr = (ptr + 2) + ((tag.PC >> 11) * 2);
+                            Byte hb = (Byte)((Byte *)[rfidPacketBuffer bytes])[rssiPtr];
+                            Byte lb = (Byte)((Byte *)[rfidPacketBuffer bytes])[rssiPtr+1];
+                            tag.rssi = (Byte)[CSLBleReader decodeRSSI:hb lowByte:lb];
+                            tag.portNumber=0;
+                            ptr+= (2 + ((tag.PC >> 11) * 2) + 2);
+                            [self.readerDelegate didReceiveTagResponsePacket:self tagReceived:tag]; //this will call the method for handling the tag response.
+                            
+                            NSLog(@"[decodePacketsInBufferAsync] Tag data found: PC=%04X EPC=%@ rssi=%d", tag.PC, tag.EPC, tag.rssi);
+                            tag.timestamp = [NSDate date];
+                            rangingTagCount++;
+                            
+                            @synchronized(filteredBuffer) {
+                                //insert the tag data to the sorted filteredBuffer if not duplicated
+                                
+                                //check and see if epc exists on the array using binary search
+                                NSRange searchRange = NSMakeRange(0, [filteredBuffer count]);
+                                NSUInteger findIndex = [filteredBuffer indexOfObject:tag
+                                                                    inSortedRange:searchRange
+                                                                          options:NSBinarySearchingInsertionIndex | NSBinarySearchingFirstEqual
+                                                                  usingComparator:^(id obj1, id obj2) {
+                                    NSString* str1; NSString* str2;
+                                    str1 = ([obj1 isKindOfClass:[CSLReaderBarcode class]]) ? ((CSLReaderBarcode*)obj1).barcodeValue : ((CSLBleTag*)obj1).EPC;
+                                    str2 = ([obj2 isKindOfClass:[CSLReaderBarcode class]]) ? ((CSLReaderBarcode*)obj2).barcodeValue : ((CSLBleTag*)obj2).EPC;
+                                    return [str1 compare:str2 options:NSCaseInsensitiveSearch];
+                                }];
+                                
+                                if ( findIndex >= [filteredBuffer count] )  //tag to be the largest.  Append to the end.
+                                {
+                                    [filteredBuffer insertObject:tag atIndex:findIndex];
+                                    uniqueTagCount++;
+                                }
+                                else if ( [[filteredBuffer[findIndex] isKindOfClass:[CSLReaderBarcode class]] ? ((CSLReaderBarcode*)filteredBuffer[findIndex]).barcodeValue : ((CSLBleTag*)filteredBuffer[findIndex]).EPC caseInsensitiveCompare:tag.EPC] != NSOrderedSame)
+                                {
+                                    //new tag found.  insert into buffer in sorted order
+                                    [filteredBuffer insertObject:tag atIndex:findIndex];
+                                    uniqueTagCount++;
+                                }
+                                else    //tag is duplicated, but will replace the existing tag information with the new one for updating the RRSI value.
+                                {
+                                    [filteredBuffer replaceObjectAtIndex:findIndex withObject:tag];
+                                }
+                            }
+                            
+                            //return when pointer reaches the end of the RFID response packet.
+                            if (ptr >= (datalen + 9)) {
+                                NSLog(@"[decodePacketsInBufferAsync] Finished decode all tags in packet.");
+                                NSLog(@"[decodePacketsInBufferAsync] Unique tags in buffer: %d", (unsigned int)[filteredBuffer count]);
+                                [rfidPacketBuffer setLength:0];
+                                break;
+                            }
+                        }
+                    }
                 }
-                
-                
             }
             else if ([eventCode isEqualToString:@"9000"]) {   //Power on barcode
                 NSLog(@"[decodePacketsInBufferAsync] Power on barcode");
@@ -3339,6 +3459,21 @@
     
 }
 
+    
++ (double)decodeRSSI:(Byte)high_byte lowByte:(Byte) low_byte {
+    int rssi = high_byte & 0x00FF;
+    rssi = rssi << 8;
+    rssi |= low_byte & 0x00FF;
+    if ((Byte)(high_byte & 0x0080) != 0) {
+        rssi = 65536 - rssi;
+        rssi = -rssi;
+    }
+    double result = (double) rssi;
+    result /= 100;
+    result = result + 106.98;
+    return result;
+    
+}
 
 
 @end
