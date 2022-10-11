@@ -118,6 +118,8 @@ Insertion/update of tag data is based on binary searching algorithm for better e
 @property NSInteger rangingTagCount;
 ///This property holds the number of unique tags being read.  It is reset within a specific time interval (1 second by default)
 @property NSInteger uniqueTagCount;
+///This property holds the number of tags being read.  It is reset within a specific time interval (1 second by default)
+@property NSInteger readerTagRate;
 ///Enumeration type that holds the battery status information.  Its value is is being updated by a scheduled timer when batteery level notifications return on every 5 seconds
 @property CSLReaderBattery* batteryInfo;
 ///This property indicates if the reader is either in tag access or inventory mode
@@ -344,6 +346,16 @@ Set output power of the reader
  */
 - (BOOL)setPower:(double) powerInDbm;
 /**
+Set output power of the reader
+ 
+ @param port_number antenna port to be configured
+ @param powerInDbm Power (0.01 dBm step, 0 to 3000)
+
+ @return TRUE if the operation is successful
+ */
+- (BOOL)setPower:(Byte)port_number
+      PowerLevel:(int)powerInDbm;
+/**
  Set antenna cycle
  @param cycles Should set to 0 (continous) all the time as CS710 is running with a single antenna
  @return TRUE if the operation is successful
@@ -356,6 +368,23 @@ Set output power of the reader
  @return TRUE if the operation is successful
  */
 - (BOOL)setAntennaDwell:(NSUInteger) timeInMilliseconds;
+/**
+ Set antenna dwell time
+ @param port_number antenna port to be configured
+ @param timeInMilliseconds number of milliseconds to communicate on this antenna during a given Antenna Cycle.
+ 0x00000000 indicates that dwell time should not be used.
+ @return TRUE if the operation is successful
+ */
+- (BOOL)setAntennaDwell:(Byte)port_number
+                   time:(NSUInteger)timeInMilliseconds;
+/**
+ Set reader mode
+ @param port_number antenna port to be configured
+ @param mode_id The RF mode to use when transmitting and receiving data
+ @return TRUE if the operation is successful
+ */
+- (BOOL)setRfMode:(Byte)port_number
+             mode:(NSUInteger)mode_id;
 /**
 Select antenna port
 @param portIndex Port number between 0-15
@@ -466,6 +495,66 @@ Select which set of algorithm parameter registers to access.
  @return TRUE if the operation is successful
  */
 - (BOOL)setQueryConfigurations:(TARGET) queryTarget querySession:(SESSION)query_session querySelect:(QUERYSELECT)query_sel;
+/**
+Set inventory round control
+@param port_number Enable/disable antenna port
+@param init_q  The initial Q value to use to start the round.
+@param max_q The maximum allowed Q value
+@param min_q The minimum allowed Q value
+@param num_min_cycles The number of Empty Minimum Q querys or no valid EPCs required to end the Inventory Round
+@param fixed_q_mode Operate the Inventory round as a single pass through the slots No Q adjustment
+@param q_inc_use_query If this is true the Q algorithm will send a Full Query instead of a QueryAdj command when increasing the Q.
+@param q_dec_use_query If this is true the Q algorithm will send a Full Query instead of a QueryAdj command when decreasing Q
+@param session The Gen2 session to use in the Query and other Query like Gen2 packets. This encoding matches the encoding specified in the Gen2 specification. This defaults to 1 if TagFocus is enabled.
+@param sel_query_command The Sel field in the Query command. This encoding matches the encoding specified in the Gen2 specification. This defaults to 1 if TagFocus or FastId are enabled.
+@param query_target Indicates A or B target for session flag values. This encoding matches the encoding specified in the Gen2 specification.
+@param halt_on_all_tags When set, this will cause the modem to issue a ReqRn to open every tag that it reads and then allow the host to perform Gen2 access commands on that tag.
+@param fast_id_enable When set, this will cause the modem to automatically perform the extra operations required for FastID operation. This forces the select flag to 1
+@param tag_focus_enable Controls whether or not to enable tag focus at the beginning of every inventory round. This forces the select and session flags to 1.
+@param max_queries_since_valid_epc  This is a control for the dynamic Q algorithm which is how may Query or QueryAdj founds it is allowed to send since it received a valid EPC. If it reaches this value it will immediately end the Inventory round
+@param target_toggle  (0 = No, 1 = Yes)
+@return TRUE if the operation is successful
+*/
+- (BOOL)SetInventoryRoundControl:(Byte)port_number
+                        InitialQ:(Byte)init_q
+                            MaxQ:(Byte)max_q
+                            MinQ:(Byte)min_q
+                   NumMinQCycles:(Byte)num_min_cycles
+                      FixedQMode:(BOOL)fixed_q_mode
+               QIncreaseUseQuery:(BOOL)q_inc_use_query
+               QDecreaseUseQuery:(BOOL)q_dec_use_query
+                         Session:(Byte)session
+               SelInQueryCommand:(Byte)sel_query_command
+                     QueryTarget:(BOOL)query_target
+                   HaltOnAllTags:(BOOL)halt_on_all_tags
+                    FastIdEnable:(BOOL)fast_id_enable
+                  TagFocusEnable:(BOOL)tag_focus_enable
+         MaxQueriesSinceValidEpc:(NSUInteger)max_queries_since_valid_epc
+                    TargetToggle:(Byte)target_toggle;
+/**
+ Set duplicate eliminiation rolling window in seconds
+ @param rollingWindowInSeconds Duplicate elimination rolling window in seconds.
+ @return TRUE if the operation is successful
+ */
+- (BOOL)setDuplicateEliminationRollingWindow:(Byte)rollingWindowInSeconds;
+/**
+ Set intra packet delay
+ @param delayInMilliseconds Default 4 msec,, to control and minimize Bluetooth path packet loss
+ @return TRUE if the operation is successful
+ */
+- (BOOL)setIntraPacketDelay:(Byte)delayInMilliseconds;
+/**
+ 16 possible events to be enabled or disabled
+ @param keep_alive Default 4 msec,, to control and minimize Bluetooth path packet loss
+ @param inventory_end Default 4 msec,, to control and minimize Bluetooth path packet loss
+ @param crc_error Default 4 msec,, to control and minimize Bluetooth path packet loss
+ @param tag_read_rate Default 4 msec,, to control and minimize Bluetooth path packet loss
+ @return TRUE if the operation is successful
+ */
+- (BOOL)setEventPacketUplinkEnable:(BOOL)keep_alive
+                      InventoryEnd:(BOOL)inventory_end
+                      CrcError:(BOOL)crc_error
+                      TagReadRate:(BOOL)tag_read_rate;
 /**
  Start Inventory asynchornously
  @return TRUE if the operation is successful
