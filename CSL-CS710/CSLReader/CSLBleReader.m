@@ -3483,8 +3483,6 @@
     NSString * eventCode;
     NSMutableData* rfidPacketBuffer;    //buffer to all packets returned by the rfid module
     NSString* rfidPacketBufferInHexString;
-    unsigned char ecode[] = {0x81, 0x00};
-    NSMutableData* tempMutableData;
     
     filteredBuffer=[[NSMutableArray alloc] init];
     rfidPacketBuffer=[[NSMutableData alloc] init];
@@ -3656,8 +3654,6 @@
                         ((datalen + 9) * 2) == [rfidPacketBufferInHexString length]) {
                         
                         //iterate through all the tag data
-                        UInt32 timestamp = ((Byte *)[rfidPacketBuffer bytes])[12] + ((((Byte *)[rfidPacketBuffer bytes])[11] << 8) & 0x0000FF00) + ((((Byte *)[rfidPacketBuffer bytes])[10] << 16) & 0x00FF0000) + ((((Byte *)[rfidPacketBuffer bytes])[9] << 24) & 0xFF000000);
-                        
                         int ptr=15;     //starting point of the tag data
                         while(TRUE)
                         {
