@@ -233,7 +233,8 @@
     NSLog(@"Did discover peripheral. peripheral: %@ rssi: %@, UUID: %@ advertisementData: %@ ", peripheral, RSSI, peripheral.identifier, advertisementData);
     
     //for CS463 BT mode, copy the kCBAdvDataLocalName value to the peripheral name.
-    NSString* peripheralName=(NSString*)[advertisementData objectForKey:@"kCBAdvDataLocalName"];
+    //NSString* peripheralName=(NSString*)[advertisementData objectForKey:@"kCBAdvDataLocalName"];
+    NSString* peripheralName = peripheral.name;
     
     if (peripheralName) {
         NSMutableArray *peripherals = [self mutableArrayValueForKey:@"bleDeviceList"];

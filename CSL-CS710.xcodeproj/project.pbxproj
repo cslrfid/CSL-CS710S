@@ -42,8 +42,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		25E90B1BD3086EFEB295A954 /* Pods-CSL-CS108.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CSL-CS108.release.xcconfig"; path = "Target Support Files/Pods-CSL-CS108/Pods-CSL-CS108.release.xcconfig"; sourceTree = "<group>"; };
-		36149285F4C0AE3F416D6B5F /* Pods-CSL-CS108.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CSL-CS108.debug.xcconfig"; path = "Target Support Files/Pods-CSL-CS108/Pods-CSL-CS108.debug.xcconfig"; sourceTree = "<group>"; };
 		624460F0C314684C615C7FB4 /* Pods-CSL-CS710.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CSL-CS710.release.xcconfig"; path = "Target Support Files/Pods-CSL-CS710/Pods-CSL-CS710.release.xcconfig"; sourceTree = "<group>"; };
 		8A5DD7E1287DBE8A00F89626 /* CSL_CS710.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CSL_CS710.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		8A5DD7E4287DBE8A00F89626 /* CSL_CS710.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CSL_CS710.h; sourceTree = "<group>"; };
@@ -176,8 +174,6 @@
 		D795B4FE5C3049F4ADBA722C /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				36149285F4C0AE3F416D6B5F /* Pods-CSL-CS108.debug.xcconfig */,
-				25E90B1BD3086EFEB295A954 /* Pods-CSL-CS108.release.xcconfig */,
 				8BF1B3D5204033DAECB93460 /* Pods-CSL-CS710.debug.xcconfig */,
 				624460F0C314684C615C7FB4 /* Pods-CSL-CS710.release.xcconfig */,
 			);

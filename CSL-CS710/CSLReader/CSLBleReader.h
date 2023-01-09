@@ -48,10 +48,17 @@ typedef NS_ENUM(Byte, QUERYALGORITHM)
 ///Link profile
 typedef NS_ENUM(Byte, LINKPROFILE)
 {
-    MULTIPATH_INTERFERENCE_RESISTANCE = 0x00,
-    RANGE_DRM,
-    RANGE_THROUGHPUT_DRM,
-    MAX_THROUGHPUT
+    MID_103 = 0x00,
+    MID_120,
+    MID_345,
+    MID_302,
+    MID_323,
+    MID_344,
+    MID_223,
+    MID_222,
+    MID_241,
+    MID_244,
+    MID_285
 };
 //Argument to underlying Query
 typedef NS_ENUM(Byte, QUERYSELECT)
@@ -177,6 +184,31 @@ Insertion/update of tag data is based on binary searching algorithm for better e
  @return TRUE if the operation is successful
  */
 - (BOOL)readOEMData:(CSLBleInterface*)intf atAddr:(unsigned short)addr forData:(UInt32*)data;
+/**
+ Get current country enum of reader
+ @param intf CSLBleInterface that references to the current reader instance
+ @param data UInt32 that holds the value of the data address
+ @return TRUE if the operation is successful
+ */
+- (BOOL)getCountryEnum:(CSLBleInterface*)intf forData:(UInt32*)data;
+/**
+ Read OEM data that contains product-specific information such as country code, antenna version and frequency channel information
+ @param intf CSLBleInterface that references to the current reader instance
+ @param addr Address of the memory location
+ @param len Length of regsiter in bytes
+ @param data UInt32 that holds the value of the data address
+ @return TRUE if the operation is successful
+ */
+- (BOOL)E710ReadRegister:(CSLBleInterface*)intf atAddr:(unsigned short)addr regLength:(Byte)len forData:(NSData**)data;
+/**
+ Write OEM data that contains product-specific information such as country code, antenna version and frequency channel information
+ @param intf CSLBleInterface that references to the current reader instance
+ @param addr Address of the memory location
+ @param len Length of regsiter in bytes
+ @param data NSData pointer that reference the value of the data to be written
+ @return TRUE if the operation is successful
+ */
+- (BOOL)E710WriteRegister:(CSLBleInterface*)intf atAddr:(unsigned short)addr regLength:(Byte)len forData:(NSData*)data error:(Byte*)error_code;
 /**
 Set frequency band based on the region selected
 @param frequencySelector channel number selected
@@ -392,7 +424,7 @@ Select antenna port
 */
 - (BOOL)selectAntennaPort:(NSUInteger) portIndex;
 /**
-Set antenna configurations
+Set antenna configurations (obsolete for CS710)
 @param isEnable Enable/disable antenna port
 @param mode Inventory mode
 0 = Global mode (use global parameters). CS710 must set as 0.
@@ -422,7 +454,15 @@ Set antenna configurations
 FrequencyChannel:(Byte)fChannel
             isEASEnabled:(BOOL)eas;
 /**
-Set antenna inventory count
+Set antenna configuration (enable/disable)
+@param port_number antenna port to be configured
+@param isEnable Enable/disable antenna port
+@return TRUE if the operation is successful
+*/
+- (BOOL)setAntennaConfig:(Byte)port_number
+              PortEnable:(BOOL)isEnable;
+/**
+Set antenna inventory count (obsolete for CS710)
 @param count Number of inventory rounds for current port
 0x00000000 indicates that inventory round count should not be used.
 @return TRUE if the operation is successful

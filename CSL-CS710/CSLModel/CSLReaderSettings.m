@@ -24,15 +24,16 @@
 -(id)init {
     if (self = [super init])  {
         //set default values
-        self.tagPopulation=30;
+        self.tagPopulation=60;
         self.isQOverride=false;
-        self.QValue=6;
+        self.QValue=7;
         self.power = 300;
         self.tagAccessPort = 0;
-        self.session = S1;
+        self.session = S0;
         self.target = ToggleAB;
         self.algorithm = DYNAMICQ;
-        self.linkProfile=RANGE_DRM;
+        self.linkProfile=MID_345;
+        self.DuplicateEliminiationWindow = 0;
         self.enableSound=true;
         self.tagFocus=0;    //tag focus disable by default
         self.FastId=0;    //fast id disable by default

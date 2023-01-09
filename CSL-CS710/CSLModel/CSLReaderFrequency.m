@@ -99,6 +99,7 @@
     NSArray* JP4CHFreqIndex;
     NSArray* JP6CHFreqIndex;
     
+    NSArray* CountryEnumToHoppingStatus;
 }
 
 -(id)init {
@@ -119,6 +120,46 @@
         [self generateTableOfFreq];
     }
     return self;
+}
+
+-(id)initWithOEMData:(UInt32)countryCode specialCountryVerison:(UInt32)special_country FreqModFlag:(UInt32)freq_mod_flag ModelCode:(UInt32)model_code CountryEnum:(UInt16)country_enum {
+    if (self = [super init])  {
+        //set default values
+        _CountryCode=countryCode;
+        _SpecialCountryVerison=special_country;
+        _FreqModFlag=freq_mod_flag;
+        _ModelCode=model_code;
+        [self generateTableOfFreq];
+        [self generateCountryEnumToHoppingStatus];
+        _isFixed=[[CountryEnumToHoppingStatus objectAtIndex:country_enum] unsignedIntValue];
+    }
+    return self;
+}
+
+-(void)generateCountryEnumToHoppingStatus {
+    CountryEnumToHoppingStatus=[NSArray arrayWithObjects:[NSNumber numberWithUnsignedInt:0], [NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:0],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],
+                                [NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:0],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:0],[NSNumber numberWithUnsignedInt:0],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],
+                                [NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:0],
+                                [NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],
+                                [NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:0],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:0],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:0],[NSNumber numberWithUnsignedInt:0],
+                                [NSNumber numberWithUnsignedInt:0],[NSNumber numberWithUnsignedInt:0],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:0],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:0],[NSNumber numberWithUnsignedInt:1],
+                                [NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:0],[NSNumber numberWithUnsignedInt:0],
+                                [NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:0],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],
+                                [NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:0],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:0],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],
+                                [NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:0],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],
+                                [NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:0],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],
+                                [NSNumber numberWithUnsignedInt:0],[NSNumber numberWithUnsignedInt:0],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],
+                                [NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:0],
+                                [NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:0],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:0],[NSNumber numberWithUnsignedInt:1],
+                                [NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:0],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:0],[NSNumber numberWithUnsignedInt:0],
+                                [NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:0],[NSNumber numberWithUnsignedInt:0],[NSNumber numberWithUnsignedInt:0],
+                                [NSNumber numberWithUnsignedInt:0],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],
+                                [NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:0],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],
+                                [NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:0],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],
+                                [NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:0],[NSNumber numberWithUnsignedInt:0],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],
+                                [NSNumber numberWithUnsignedInt:0],[NSNumber numberWithUnsignedInt:0],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],
+                                [NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:0],[NSNumber numberWithUnsignedInt:0],[NSNumber numberWithUnsignedInt:0],[NSNumber numberWithUnsignedInt:1],
+                                [NSNumber numberWithUnsignedInt:0],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1], nil];
 }
 
 -(void)generateRegionList {

@@ -31,6 +31,8 @@
 @property (assign) QUERYALGORITHM algorithm;
 ///Link profile selected
 @property (assign) LINKPROFILE linkProfile;
+///Duplicate Eliminiation Windows
+@property (assign) int DuplicateEliminiationWindow;
 ///Define whether sound alert is enabled/disabled
 @property (assign) BOOL enableSound;
 ///Impinj Extension - Tag Focus
