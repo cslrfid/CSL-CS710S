@@ -94,6 +94,8 @@ CSLRfidAppEngine * appEngine;
     
     if([defaults objectForKey:@"power"])
         settings.power = (int)[defaults integerForKey:@"power"];
+    if([defaults objectForKey:@"DuplicateEliminiationWindow"])
+        settings.DuplicateEliminiationWindow = (int)[defaults integerForKey:@"DuplicateEliminiationWindow"];
     if([defaults objectForKey:@"tagPopulation"])
         settings.tagPopulation = (int)[defaults integerForKey:@"tagPopulation"];
     if([defaults objectForKey:@"isQOverride"])
@@ -172,6 +174,7 @@ CSLRfidAppEngine * appEngine;
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     
     [defaults setInteger:settings.power forKey:@"power"];
+    [defaults setInteger:settings.DuplicateEliminiationWindow forKey:@"DuplicateEliminiationWindow"];
     [defaults setInteger:settings.tagPopulation forKey:@"tagPopulation"];
     [defaults setBool:settings.isQOverride forKey:@"isQOverride"];
     [defaults setInteger:settings.QValue forKey:@"QValue"];
