@@ -1208,10 +1208,10 @@
 - (BOOL)getRfidBrdSerialNumber:(NSString**) serialNumber {
     
     NSData* regData;
-    if ([self E710ReadRegister:self atAddr:0xEF9C regLength:16 forData:&regData])
+    if ([self E710ReadRegister:self atAddr:0x5020 regLength:16 forData:&regData])
     {
         if ([regData length] == 16) {
-            *serialNumber=[NSString stringWithUTF8String:[regData bytes]];
+            *serialNumber=[[NSString alloc] initWithData:regData encoding:NSUTF8StringEncoding];
             NSLog(@"16 byte serial number: %@", *serialNumber);
             return true;
         }
