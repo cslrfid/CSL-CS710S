@@ -48,17 +48,21 @@ typedef NS_ENUM(Byte, QUERYALGORITHM)
 ///Link profile
 typedef NS_ENUM(Byte, LINKPROFILE)
 {
-    MID_103 = 0x00,
-    MID_120,
-    MID_345,
-    MID_302,
-    MID_323,
-    MID_344,
-    MID_223,
-    MID_222,
-    MID_241,
-    MID_244,
-    MID_285
+    MULTIPATH_INTERFERENCE_RESISTANCE = 0x00,
+    RANGE_DRM = 0x01,
+    RANGE_THROUGHPUT_DRM = 0x02,
+    MAX_THROUGHPUT = 0x03,
+    MID_103 = 0x10,
+    MID_120 = 0x11,
+    MID_345 = 0x12,
+    MID_302 = 0x13,
+    MID_323 = 0x14,
+    MID_344 = 0x15,
+    MID_223 = 0x16,
+    MID_222 = 0x17,
+    MID_241 = 0x18,
+    MID_244 = 0x19,
+    MID_285 = 0x1A
 };
 //Argument to underlying Query
 typedef NS_ENUM(Byte, QUERYSELECT)
@@ -162,7 +166,7 @@ Insertion/update of tag data is based on binary searching algorithm for better e
  @param low_byte It holds low byte of the RSSI value
  @return dobule RSSI in dBuV
  */
-+ (double)decodeRSSI:(Byte)high_byte lowByte:(Byte) low_byte;
++ (double)E710DecodeRSSI:(Byte)high_byte lowByte:(Byte) low_byte;
 /**
  initialization selector that:
  - call init selector of the super class CSLBleInterface
@@ -190,7 +194,7 @@ Insertion/update of tag data is based on binary searching algorithm for better e
  @param data UInt32 that holds the value of the data address
  @return TRUE if the operation is successful
  */
-- (BOOL)getCountryEnum:(CSLBleInterface*)intf forData:(UInt32*)data;
+- (BOOL)E710GetCountryEnum:(CSLBleInterface*)intf forData:(UInt32*)data;
 /**
  Read OEM data that contains product-specific information such as country code, antenna version and frequency channel information
  @param intf CSLBleInterface that references to the current reader instance
@@ -209,6 +213,7 @@ Insertion/update of tag data is based on binary searching algorithm for better e
  @return TRUE if the operation is successful
  */
 - (BOOL)E710WriteRegister:(CSLBleInterface*)intf atAddr:(unsigned short)addr regLength:(Byte)len forData:(NSData*)data error:(Byte*)error_code;
+
 /**
 Set frequency band based on the region selected
 @param frequencySelector channel number selected
@@ -415,7 +420,7 @@ Set output power of the reader
  @param mode_id The RF mode to use when transmitting and receiving data
  @return TRUE if the operation is successful
  */
-- (BOOL)setRfMode:(Byte)port_number
+- (BOOL)E710SetRfMode:(Byte)port_number
              mode:(NSUInteger)mode_id;
 /**
 Select antenna port
@@ -424,7 +429,7 @@ Select antenna port
 */
 - (BOOL)selectAntennaPort:(NSUInteger) portIndex;
 /**
-Set antenna configurations (obsolete for CS710)
+Set antenna configurations
 @param isEnable Enable/disable antenna port
 @param mode Inventory mode
 0 = Global mode (use global parameters). CS710 must set as 0.
@@ -459,10 +464,10 @@ Set antenna configuration (enable/disable)
 @param isEnable Enable/disable antenna port
 @return TRUE if the operation is successful
 */
-- (BOOL)setAntennaConfig:(Byte)port_number
+- (BOOL)E710SetAntennaConfig:(Byte)port_number
               PortEnable:(BOOL)isEnable;
 /**
-Set antenna inventory count (obsolete for CS710)
+Set antenna inventory count
 @param count Number of inventory rounds for current port
 0x00000000 indicates that inventory round count should not be used.
 @return TRUE if the operation is successful
@@ -555,7 +560,7 @@ Set inventory round control
 @param target_toggle  (0 = No, 1 = Yes)
 @return TRUE if the operation is successful
 */
-- (BOOL)SetInventoryRoundControl:(Byte)port_number
+- (BOOL)E710SetInventoryRoundControl:(Byte)port_number
                         InitialQ:(Byte)init_q
                             MaxQ:(Byte)max_q
                             MinQ:(Byte)min_q
@@ -576,13 +581,13 @@ Set inventory round control
  @param rollingWindowInSeconds Duplicate elimination rolling window in seconds.
  @return TRUE if the operation is successful
  */
-- (BOOL)setDuplicateEliminationRollingWindow:(Byte)rollingWindowInSeconds;
+- (BOOL)E710SetDuplicateEliminationRollingWindow:(Byte)rollingWindowInSeconds;
 /**
  Set intra packet delay
  @param delayInMilliseconds Default 4 msec,, to control and minimize Bluetooth path packet loss
  @return TRUE if the operation is successful
  */
-- (BOOL)setIntraPacketDelay:(Byte)delayInMilliseconds;
+- (BOOL)E710SetIntraPacketDelay:(Byte)delayInMilliseconds;
 /**
  16 possible events to be enabled or disabled
  @param keep_alive Default 4 msec,, to control and minimize Bluetooth path packet loss
@@ -591,7 +596,7 @@ Set inventory round control
  @param tag_read_rate Default 4 msec,, to control and minimize Bluetooth path packet loss
  @return TRUE if the operation is successful
  */
-- (BOOL)setEventPacketUplinkEnable:(BOOL)keep_alive
+- (BOOL)E710SetEventPacketUplinkEnable:(BOOL)keep_alive
                       InventoryEnd:(BOOL)inventory_end
                       CrcError:(BOOL)crc_error
                       TagReadRate:(BOOL)tag_read_rate;
@@ -615,5 +620,9 @@ Set inventory round control
  Start the data packet decoding routine, where a selector will be running on a background thread and decode the received packet if commands were being sent out previously.  Results will be returned to the recvQueue (for asynchornous commands)  and to cmdRespQueue (for synchronous commands)
  */
 - (void)decodePacketsInBufferAsync;
+/**
+ E710 Start the data packet decoding routine, where a selector will be running on a background thread and decode the received packet if commands were being sent out previously.  Results will be returned to the recvQueue (for asynchornous commands)  and to cmdRespQueue (for synchronous commands)
+ */
+- (void)E710DecodePacketsInBufferAsync;
 
 @end

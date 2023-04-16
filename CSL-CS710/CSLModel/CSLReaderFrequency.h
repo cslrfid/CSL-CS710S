@@ -31,8 +31,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property NSMutableDictionary* FrequencyIndex;
 
 -(id)initWithOEMData:(UInt32)countryCode specialCountryVerison:(UInt32)special_country FreqModFlag:(UInt32)freq_mod_flag ModelCode:(UInt32)model_code isFixed:(UInt32)is_fixed;
-
 -(id)initWithOEMData:(UInt32)countryCode specialCountryVerison:(UInt32)special_country FreqModFlag:(UInt32)freq_mod_flag ModelCode:(UInt32)model_code CountryEnum:(UInt16)country_enum;
+
+
 
 @end
 

@@ -26,7 +26,7 @@ static double _pcbVersion;
     if (self = [super init]) {
         _pcbVersion=_pcbVersion;
 
-        //[self setBatteryMode:IDLE];
+        [self setBatteryMode:IDLE];
     }
     return self;
 }

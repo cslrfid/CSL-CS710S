@@ -106,6 +106,7 @@
     
     //set default values to FCC fixed
     self = [self initWithOEMData:2 specialCountryVerison:0 FreqModFlag:0xAA ModelCode:0x0B isFixed:0x00];
+    [self generateCountryEnumToHoppingStatus];
     return self;
 }
 
