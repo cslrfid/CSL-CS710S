@@ -94,4 +94,7 @@
 ///Post-filter - enabled
 @property (assign) BOOL postfilterIsEnabled;
 
+- (id) init;
+- (id)initWithReaderType:(READERTYPE) type;
+
 @end

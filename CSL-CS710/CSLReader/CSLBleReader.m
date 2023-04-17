@@ -50,7 +50,12 @@
 
     [super connectDevice:peripheral];
     
-    self.readerModelNumber = CS710;
+    for (int i=0;i<COMMAND_TIMEOUT_5S;i++) { //receive data or time out in 5 seconds
+        if (connectStatus == CONNECTED)
+            break;
+        [NSThread sleepForTimeInterval:0.001f];
+    }
+    
     if (self.readerModelNumber == CS710)
     {
         [self performSelectorInBackground:@selector(E710DecodePacketsInBufferAsync) withObject:(nil)];

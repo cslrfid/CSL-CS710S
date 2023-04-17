@@ -109,7 +109,7 @@
                     NSDictionary * options = [NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:FALSE], CBCentralManagerScanOptionAllowDuplicatesKey, nil];
                     [bleDeviceList removeAllObjects];
                     [deviceListName removeAllObjects];
-                    [manager scanForPeripheralsWithServices:[NSArray arrayWithObject:[CBUUID UUIDWithString:@"9802"]] options:options];
+                    [manager scanForPeripheralsWithServices:[NSArray arrayWithObjects:[CBUUID UUIDWithString:@"9800"], [CBUUID UUIDWithString:@"9802"], nil] options:options];
                     connectStatus=SCANNING;
                     [self.delegate didInterfaceChangeConnectStatus:self]; //this will call the method for connections status chagnes.
                 }
@@ -333,10 +333,11 @@
         NSLog(@"Service found with UUID: %@", service.UUID.UUIDString);
         
         // for the CSL reader UUID
-        if([service.UUID isEqual:[CBUUID UUIDWithString:@"9802"]])
+        if([service.UUID isEqual:[CBUUID UUIDWithString:@"9800"]] || [service.UUID isEqual:[CBUUID UUIDWithString:@"9802"]])
         {
             /* CSL Characterister UUID  - downlink and uplink respectively */
             [bleDevice discoverCharacteristics:[NSArray arrayWithObjects:[CBUUID UUIDWithString:@"9900"], [CBUUID UUIDWithString:@"9901"],  nil] forService:service];
+            self.readerModelNumber=[service.UUID isEqual:[CBUUID UUIDWithString:@"9802"]] ? CS710 : CS108;
         }
         else if([service.UUID isEqual:[CBUUID UUIDWithString:@"180A"]])
         {
@@ -359,7 +360,7 @@
     }
     NSLog(@"didDiscoverCharacteristicsForService service UUID=%@", service.UUID);
     
-    if([service.UUID isEqual:[CBUUID UUIDWithString:@"9802"]])
+    if([service.UUID isEqual:[CBUUID UUIDWithString:@"9800"]] || [service.UUID isEqual:[CBUUID UUIDWithString:@"9802"]])
     {
         for (CBCharacteristic * characteristic in service.characteristics)
         {

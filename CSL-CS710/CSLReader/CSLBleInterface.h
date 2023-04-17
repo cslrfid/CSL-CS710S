@@ -26,6 +26,14 @@ typedef NS_ENUM(Byte, STATUS) {
     ERROR
 };
 
+//Reader type (fixed or handheld)
+typedef NS_ENUM(Byte, READERTYPE)
+{
+    CS108 = 0x00,
+    CS463 = 0x01,
+    CS710 = 0x02
+};
+
 @class CSLBleInterface;             //define class, so protocol can see CSLBleInterface class
 /**
  Delegate of the Bluetooth LE interface events
@@ -85,6 +93,8 @@ typedef NS_ENUM(Byte, STATUS) {
 @property CSLCircularQueue* recvQueue;
 ///Property for the connection status that is read-only
 @property (readonly) STATUS connectStatus;
+///Reader type (fixed or handheld)
+@property READERTYPE readerModelNumber;
 ///instance of the CSLBleInterfaceDelegate delegate
 @property (nonatomic, weak) id <CSLBleInterfaceDelegate> delegate; //define CSLBleReaderDelegate as delegate
 @property (nonatomic, weak) id <CSLBleScanDelegate> scanDelegate; //define CSLBleScanDelegate as delegate
