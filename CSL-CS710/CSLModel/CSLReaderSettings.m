@@ -22,18 +22,22 @@
 @synthesize channel;
 
 -(id)init {
-    if (self = [super init])  {
+    return [self initWithReaderType:CS108];
+}
+
+-(id)initWithReaderType:(READERTYPE) type {
+    
+    if (self = [super init]) {
         //set default values
-        self.tagPopulation=60;
+        self.tagPopulation=30;
         self.isQOverride=false;
-        self.QValue=7;
+        self.QValue=6;
         self.power = 300;
         self.tagAccessPort = 0;
-        self.session = S0;
+        self.session = S1;
         self.target = ToggleAB;
         self.algorithm = DYNAMICQ;
-        self.linkProfile=MID_345;
-        self.DuplicateEliminiationWindow = 0;
+        self.linkProfile=RANGE_DRM;
         self.enableSound=true;
         self.tagFocus=0;    //tag focus disable by default
         self.FastId=0;    //fast id disable by default
@@ -74,9 +78,27 @@
         self.postfilterOffset=0;
         self.postfilterIsNotMatchMaskEnabled=false;
         self.postfilterIsEnabled=false;
+    
+        switch (type)
+        {
+            case CS710:
+                self.tagPopulation=60;
+                self.QValue=7;
+                self.session = S0;
+                self.linkProfile=MID_345;
+                self.DuplicateEliminiationWindow = 0;
+                break;
+            case CS108:
+            case CS463:
+            default:
+                self.tagPopulation=30;
+                self.QValue=6;
+                self.session = S1;
+                self.linkProfile=RANGE_DRM;
+                break;
+        }
     }
     return self;
 }
-
 
 @end

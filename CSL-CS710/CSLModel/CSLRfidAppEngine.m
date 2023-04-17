@@ -92,6 +92,19 @@ CSLRfidAppEngine * appEngine;
 -(void)reloadSettingsFromUserDefaults {
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     
+    if([defaults objectForKey:@"readerModelNumber"])
+    {
+        READERTYPE userDefaultsReaderType = (READERTYPE)[defaults integerForKey:@"readerModelNumber"];
+        
+        if ((userDefaultsReaderType == CS710 && self.reader.readerModelNumber != CS710) ||
+            (userDefaultsReaderType != CS710 && self.reader.readerModelNumber == CS710) )
+        {
+            //last saved user defaults are from a different reader type than the current reader.  Initialize new set of configurations
+            settings = [[CSLReaderSettings alloc] initWithReaderType:self.reader.readerModelNumber];
+            return;
+        }
+    }
+        
     if([defaults objectForKey:@"power"])
         settings.power = (int)[defaults integerForKey:@"power"];
     if([defaults objectForKey:@"DuplicateEliminiationWindow"])
@@ -173,6 +186,7 @@ CSLRfidAppEngine * appEngine;
 -(void)saveSettingsToUserDefaults {
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     
+    [defaults setInteger:reader.readerModelNumber forKey:@"readerModelNumber"];
     [defaults setInteger:settings.power forKey:@"power"];
     [defaults setInteger:settings.DuplicateEliminiationWindow forKey:@"DuplicateEliminiationWindow"];
     [defaults setInteger:settings.tagPopulation forKey:@"tagPopulation"];
