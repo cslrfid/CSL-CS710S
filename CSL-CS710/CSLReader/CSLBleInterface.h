@@ -87,6 +87,8 @@ typedef NS_ENUM(Byte, READERTYPE)
 @property NSMutableArray * bleDeviceList;
 ///Array of NSString objects for the name of the devices
 @property NSMutableArray * deviceListName;
+///Array of NSString objects for the product model  of the devices
+@property NSMutableArray * deviceListModel;
 ///Connected BLE device
 @property CBPeripheral* bleDevice;
 ///Queue for the data packets returned
