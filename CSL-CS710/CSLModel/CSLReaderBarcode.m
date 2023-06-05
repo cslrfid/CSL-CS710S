@@ -78,7 +78,10 @@
     if ([[barcodeHexString substringToIndex:12] containsString:@"020007101713"] &&
         [[barcodeHexString substringFromIndex:[barcodeHexString length]-14] containsString:@"050111160304"]) {
         barcodeHexString=[barcodeHexString substringFromIndex:12];      //remove self-prefix
-        barcodeHexString=[barcodeHexString substringToIndex:[barcodeHexString length]-14];  //remove self-suffix
+        if ([[barcodeHexString substringFromIndex:[barcodeHexString length]-12] isEqualToString:@"050111160304"])
+            barcodeHexString=[barcodeHexString substringToIndex:[barcodeHexString length]-12];  //remove self-suffix
+        else
+            barcodeHexString=[barcodeHexString substringToIndex:[barcodeHexString length]-14];  //remove self-suffix
     }
     else if ([[barcodeHexString substringToIndex:12] containsString:@"020007101713"] &&
         [barcodeHexString containsString:@"050111160304"]) {

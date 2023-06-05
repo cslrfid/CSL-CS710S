@@ -4889,8 +4889,7 @@
                         continue;
                     }
                     
-                    //Uplink packet 3007  (csl_miscellaneous_event)
-                    datalen=((Byte *)[rfidPacketBuffer bytes])[8] + (((((Byte *)[rfidPacketBuffer bytes])[7] << 8) & 0xFF00)) ;
+                    //Uplink packet 3007  (csl_miscellaneous_event)                    
                     if ([[rfidPacketBufferInHexString substringWithRange:NSMakeRange(4, 4)] isEqualToString:@"49DC"] &&
                         [[rfidPacketBufferInHexString substringWithRange:NSMakeRange(8, 4)] isEqualToString:@"3007"] &&
                         ((datalen + 9) * 2) == [rfidPacketBufferInHexString length]) {

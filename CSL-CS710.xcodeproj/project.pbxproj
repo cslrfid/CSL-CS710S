@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		7A8D864129A1372E9F633760 /* Pods_CSL_CS710.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EE3AC62A4FE33447C0A59AEF /* Pods_CSL_CS710.framework */; };
 		8A5DD7E5287DBE8A00F89626 /* CSL_CS710.h in Headers */ = {isa = PBXBuildFile; fileRef = 8A5DD7E4287DBE8A00F89626 /* CSL_CS710.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		8A5DD7F8287DBECB00F89626 /* CSLBleTag.m in Sources */ = {isa = PBXBuildFile; fileRef = 8A5DD7EC287DBECB00F89626 /* CSLBleTag.m */; };
 		8A5DD7F9287DBECB00F89626 /* CSLBleReader.h in Headers */ = {isa = PBXBuildFile; fileRef = 8A5DD7ED287DBECB00F89626 /* CSLBleReader.h */; };
@@ -39,10 +38,25 @@
 		8A5DD828287DBED100F89626 /* CSLReaderConfigurations.h in Headers */ = {isa = PBXBuildFile; fileRef = 8A5DD816287DBED100F89626 /* CSLReaderConfigurations.h */; };
 		CA3D79B528851A26000DB4E3 /* CSLMQTTSettings.m in Sources */ = {isa = PBXBuildFile; fileRef = CA3D79B328851A26000DB4E3 /* CSLMQTTSettings.m */; };
 		CA3D79B628851A26000DB4E3 /* CSLMQTTSettings.h in Headers */ = {isa = PBXBuildFile; fileRef = CA3D79B428851A26000DB4E3 /* CSLMQTTSettings.h */; };
+		CABE46622A0ED0E30003456A /* MQTTClient.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CABE46612A0ED0E30003456A /* MQTTClient.framework */; };
+		CABE46632A0ED0E30003456A /* MQTTClient.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = CABE46612A0ED0E30003456A /* MQTTClient.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		CABE46602A0ECE8E0003456A /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				CABE46632A0ED0E30003456A /* MQTTClient.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
-		624460F0C314684C615C7FB4 /* Pods-CSL-CS710.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CSL-CS710.release.xcconfig"; path = "Target Support Files/Pods-CSL-CS710/Pods-CSL-CS710.release.xcconfig"; sourceTree = "<group>"; };
 		8A5DD7E1287DBE8A00F89626 /* CSL_CS710.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CSL_CS710.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		8A5DD7E4287DBE8A00F89626 /* CSL_CS710.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CSL_CS710.h; sourceTree = "<group>"; };
 		8A5DD7EC287DBECB00F89626 /* CSLBleTag.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CSLBleTag.m; sourceTree = "<group>"; };
@@ -73,10 +87,9 @@
 		8A5DD814287DBED100F89626 /* CSLRfidAppEngine.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CSLRfidAppEngine.m; sourceTree = "<group>"; };
 		8A5DD815287DBED100F89626 /* CSLReaderInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CSLReaderInfo.m; sourceTree = "<group>"; };
 		8A5DD816287DBED100F89626 /* CSLReaderConfigurations.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CSLReaderConfigurations.h; sourceTree = "<group>"; };
-		8BF1B3D5204033DAECB93460 /* Pods-CSL-CS710.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CSL-CS710.debug.xcconfig"; path = "Target Support Files/Pods-CSL-CS710/Pods-CSL-CS710.debug.xcconfig"; sourceTree = "<group>"; };
 		CA3D79B328851A26000DB4E3 /* CSLMQTTSettings.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CSLMQTTSettings.m; sourceTree = "<group>"; };
 		CA3D79B428851A26000DB4E3 /* CSLMQTTSettings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CSLMQTTSettings.h; sourceTree = "<group>"; };
-		EE3AC62A4FE33447C0A59AEF /* Pods_CSL_CS710.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_CSL_CS710.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		CABE46612A0ED0E30003456A /* MQTTClient.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = MQTTClient.framework; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -84,28 +97,19 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				7A8D864129A1372E9F633760 /* Pods_CSL_CS710.framework in Frameworks */,
+				CABE46622A0ED0E30003456A /* MQTTClient.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		635AB1466ED5D4FAF495E0EF /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				EE3AC62A4FE33447C0A59AEF /* Pods_CSL_CS710.framework */,
-			);
-			name = Frameworks;
-			sourceTree = "<group>";
-		};
 		8A5DD7D7287DBE8A00F89626 = {
 			isa = PBXGroup;
 			children = (
 				8A5DD7E3287DBE8A00F89626 /* CSL-CS710 */,
 				8A5DD7E2287DBE8A00F89626 /* Products */,
-				D795B4FE5C3049F4ADBA722C /* Pods */,
-				635AB1466ED5D4FAF495E0EF /* Frameworks */,
+				CABE465C2A0ECE8D0003456A /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -171,13 +175,12 @@
 			path = CSLModel;
 			sourceTree = "<group>";
 		};
-		D795B4FE5C3049F4ADBA722C /* Pods */ = {
+		CABE465C2A0ECE8D0003456A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				8BF1B3D5204033DAECB93460 /* Pods-CSL-CS710.debug.xcconfig */,
-				624460F0C314684C615C7FB4 /* Pods-CSL-CS710.release.xcconfig */,
+				CABE46612A0ED0E30003456A /* MQTTClient.framework */,
 			);
-			path = Pods;
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -213,11 +216,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 8A5DD7E8287DBE8A00F89626 /* Build configuration list for PBXNativeTarget "CSL-CS710" */;
 			buildPhases = (
-				BD3FE9A8E578B02059C39B67 /* [CP] Check Pods Manifest.lock */,
 				8A5DD7DC287DBE8A00F89626 /* Headers */,
 				8A5DD7DD287DBE8A00F89626 /* Sources */,
 				8A5DD7DE287DBE8A00F89626 /* Frameworks */,
 				8A5DD7DF287DBE8A00F89626 /* Resources */,
+				CABE46602A0ECE8E0003456A /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -269,31 +272,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
-
-/* Begin PBXShellScriptBuildPhase section */
-		BD3FE9A8E578B02059C39B67 /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-CSL-CS710-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		8A5DD7DD287DBE8A00F89626 /* Sources */ = {
@@ -439,7 +417,6 @@
 		};
 		8A5DD7E9287DBE8A00F89626 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 8BF1B3D5204033DAECB93460 /* Pods-CSL-CS710.debug.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -448,6 +425,10 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/**",
+				);
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
@@ -467,7 +448,6 @@
 		};
 		8A5DD7EA287DBE8A00F89626 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 624460F0C314684C615C7FB4 /* Pods-CSL-CS710.release.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -476,6 +456,10 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/**",
+				);
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";

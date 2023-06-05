@@ -27,6 +27,7 @@
 @synthesize connectStatus;
 @synthesize deviceName;
 @synthesize deviceListName;
+@synthesize deviceListModel;
 
 @synthesize delegate; //synthesize CSLBleInterfaceDelegate delegate
 @synthesize scanDelegate; //synthesize CSLBleScanDelegate delegate
@@ -38,6 +39,7 @@
         manager = [[CBCentralManager alloc] initWithDelegate:self queue:dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0)];
         bleDeviceList = [NSMutableArray array];
         deviceListName = [NSMutableArray array];
+        deviceListModel = [NSMutableArray array];
         recvQueue=[[CSLCircularQueue alloc] initWithCapacity:16000];
     }
     return self;
@@ -109,6 +111,7 @@
                     NSDictionary * options = [NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:FALSE], CBCentralManagerScanOptionAllowDuplicatesKey, nil];
                     [bleDeviceList removeAllObjects];
                     [deviceListName removeAllObjects];
+                    [deviceListModel removeAllObjects];
                     [manager scanForPeripheralsWithServices:[NSArray arrayWithObjects:[CBUUID UUIDWithString:@"9800"], [CBUUID UUIDWithString:@"9802"], nil] options:options];
                     connectStatus=SCANNING;
                     [self.delegate didInterfaceChangeConnectStatus:self]; //this will call the method for connections status chagnes.
@@ -239,9 +242,21 @@
     if (peripheralName) {
         NSMutableArray *peripherals = [self mutableArrayValueForKey:@"bleDeviceList"];
         if( ![bleDeviceList containsObject:peripheral] ) {
-            [deviceListName addObject:peripheralName];
-            [peripherals addObject:peripheral];
-            [self.scanDelegate deviceListWasUpdated:peripheral];
+            if (advertisementData[@"kCBAdvDataServiceUUIDs"] && ![peripheralName isEqual:@"SP"])
+            {
+                if ([[CBUUID UUIDWithString:@"9800"] isEqual:advertisementData[@"kCBAdvDataServiceUUIDs"][0]])
+                    [deviceListModel addObject:@"CS108"];
+                else if ([[CBUUID UUIDWithString:@"9802"] isEqual:advertisementData[@"kCBAdvDataServiceUUIDs"][0]])
+                    [deviceListModel addObject:@"CS710"];
+                else
+                    return;
+                
+                [deviceListName addObject:peripheralName];
+                [peripherals addObject:peripheral];
+                
+                [self.scanDelegate deviceListWasUpdated:peripheral];
+            }
+            
         }
     }
 

@@ -1,5 +1,5 @@
 framework module MQTTClient {
-  umbrella header "MQTTClient-umbrella.h"
+  umbrella header "MQTTClient.h"
 
   export *
   module * { export * }
