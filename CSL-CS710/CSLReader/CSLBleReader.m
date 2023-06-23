@@ -323,15 +323,22 @@
             connectStatus=CONNECTED;
             return false;
         }
-    }
         
-    recvPacket=((CSLBlePacket *)[cmdRespQueue deqObject]);
-    if (((Byte*)[recvPacket.payload bytes])[4] == 0x14 && ((Byte*)[recvPacket.payload bytes])[5] == 0x71 &&
-        ((Byte*)[recvPacket.payload bytes])[6] == registerCmd[6] && [recvPacket.payload length] == 9 + len) {
-        *data = [recvPacket.payload subdataWithRange:NSMakeRange(9, len)];
+        recvPacket=((CSLBlePacket *)[cmdRespQueue deqObject]);
+        if (((Byte*)[recvPacket.payload bytes])[4] == 0x14 && ((Byte*)[recvPacket.payload bytes])[5] == 0x71 &&
+            ((Byte*)[recvPacket.payload bytes])[6] == registerCmd[6] && [recvPacket.payload length] == 9 + len) {
+            *data = [recvPacket.payload subdataWithRange:NSMakeRange(9, len)];
+        }
+        else {
+            NSLog(@"Command response failure.");
+            connectStatus=CONNECTED;
+            [self.delegate didInterfaceChangeConnectStatus:self]; //this will call the method for connections status chagnes.
+            return false;
+        }
     }
-    else {
-        NSLog(@"Command response failure.");
+    else
+    {
+        NSLog(@"Command timed out.");
         connectStatus=CONNECTED;
         [self.delegate didInterfaceChangeConnectStatus:self]; //this will call the method for connections status chagnes.
         return false;
@@ -398,18 +405,26 @@
             connectStatus=CONNECTED;
             return false;
         }
-    }
         
-    recvPacket=((CSLBlePacket *)[cmdRespQueue deqObject]);
-    if (!(((Byte*)[recvPacket.payload bytes])[4] == 0x9A && ((Byte*)[recvPacket.payload bytes])[5] == 0x06 &&
-        ((Byte*)[recvPacket.payload bytes])[6] == registerCmd[6] && [recvPacket.payload length] >= 7)) {
-        *error_code = ((Byte*)[recvPacket.payload bytes])[6];
-        NSLog(@"Command response failure.  Error code: %d", *error_code);
+        recvPacket=((CSLBlePacket *)[cmdRespQueue deqObject]);
+        if (!(((Byte*)[recvPacket.payload bytes])[4] == 0x9A && ((Byte*)[recvPacket.payload bytes])[5] == 0x06 &&
+            ((Byte*)[recvPacket.payload bytes])[6] == registerCmd[6] && [recvPacket.payload length] >= 7)) {
+            *error_code = ((Byte*)[recvPacket.payload bytes])[6];
+            NSLog(@"Command response failure.  Error code: %d", *error_code);
+            connectStatus=CONNECTED;
+            [self.delegate didInterfaceChangeConnectStatus:self]; //this will call the method for connections status chagnes.
+            return false;
+        }
+        
+    }
+    else
+    {
+        NSLog(@"Command timed out.");
         connectStatus=CONNECTED;
         [self.delegate didInterfaceChangeConnectStatus:self]; //this will call the method for connections status chagnes.
         return false;
     }
-
+    
     connectStatus=CONNECTED;
     [self.delegate didInterfaceChangeConnectStatus:self]; //this will call the method for connections status chagnes.
     return true;
@@ -2369,18 +2384,26 @@
             connectStatus=CONNECTED;
             return false;
         }
-    }
         
-    recvPacket=((CSLBlePacket *)[cmdRespQueue deqObject]);
-    if (((Byte*)[recvPacket.payload bytes])[4] == 0x9A && ((Byte*)[recvPacket.payload bytes])[5] == 0x06 &&
-        ((Byte*)[recvPacket.payload bytes])[6] == duplicateElim[6] && ((Byte*)[recvPacket.payload bytes])[9] == 0) {
+        recvPacket=((CSLBlePacket *)[cmdRespQueue deqObject]);
+        if (((Byte*)[recvPacket.payload bytes])[4] == 0x9A && ((Byte*)[recvPacket.payload bytes])[5] == 0x06 &&
+            ((Byte*)[recvPacket.payload bytes])[6] == duplicateElim[6] && ((Byte*)[recvPacket.payload bytes])[9] == 0) {
+        }
+        else {
+            NSLog(@"Command response failure.");
+            connectStatus=CONNECTED;
+            [self.delegate didInterfaceChangeConnectStatus:self]; //this will call the method for connections status chagnes.
+            return false;
+        }
     }
-    else {
-        NSLog(@"Command response failure.");
+    else
+    {
+        NSLog(@"Command timed out.");
         connectStatus=CONNECTED;
         [self.delegate didInterfaceChangeConnectStatus:self]; //this will call the method for connections status chagnes.
         return false;
     }
+        
     connectStatus=CONNECTED;
     [self.delegate didInterfaceChangeConnectStatus:self]; //this will call the method for connections status chagnes.
     return true;
@@ -2438,18 +2461,26 @@
             connectStatus=CONNECTED;
             return false;
         }
-    }
         
-    recvPacket=((CSLBlePacket *)[cmdRespQueue deqObject]);
-    if (((Byte*)[recvPacket.payload bytes])[4] == 0x9A && ((Byte*)[recvPacket.payload bytes])[5] == 0x06 &&
-        ((Byte*)[recvPacket.payload bytes])[6] == intraPacketDelay[6] && ((Byte*)[recvPacket.payload bytes])[9] == 0) {
+        recvPacket=((CSLBlePacket *)[cmdRespQueue deqObject]);
+        if (((Byte*)[recvPacket.payload bytes])[4] == 0x9A && ((Byte*)[recvPacket.payload bytes])[5] == 0x06 &&
+            ((Byte*)[recvPacket.payload bytes])[6] == intraPacketDelay[6] && ((Byte*)[recvPacket.payload bytes])[9] == 0) {
+        }
+        else {
+            NSLog(@"Command response failure.");
+            connectStatus=CONNECTED;
+            [self.delegate didInterfaceChangeConnectStatus:self]; //this will call the method for connections status chagnes.
+            return false;
+        }
     }
-    else {
-        NSLog(@"Command response failure.");
+    else
+    {
+        NSLog(@"Command timed out.");
         connectStatus=CONNECTED;
         [self.delegate didInterfaceChangeConnectStatus:self]; //this will call the method for connections status chagnes.
         return false;
     }
+        
     connectStatus=CONNECTED;
     [self.delegate didInterfaceChangeConnectStatus:self]; //this will call the method for connections status chagnes.
     return true;
@@ -2512,18 +2543,27 @@
             connectStatus=CONNECTED;
             return false;
         }
-    }
         
-    recvPacket=((CSLBlePacket *)[cmdRespQueue deqObject]);
-    if (((Byte*)[recvPacket.payload bytes])[4] == 0x9A && ((Byte*)[recvPacket.payload bytes])[5] == 0x06 &&
-        ((Byte*)[recvPacket.payload bytes])[6] == eventPacket[6] && ((Byte*)[recvPacket.payload bytes])[9] == 0) {
+        recvPacket=((CSLBlePacket *)[cmdRespQueue deqObject]);
+        if (((Byte*)[recvPacket.payload bytes])[4] == 0x9A && ((Byte*)[recvPacket.payload bytes])[5] == 0x06 &&
+            ((Byte*)[recvPacket.payload bytes])[6] == eventPacket[6] && ((Byte*)[recvPacket.payload bytes])[9] == 0) {
+        }
+        else {
+            NSLog(@"Command response failure.");
+            connectStatus=CONNECTED;
+            [self.delegate didInterfaceChangeConnectStatus:self]; //this will call the method for connections status chagnes.
+            return false;
+        }
     }
-    else {
-        NSLog(@"Command response failure.");
+    else
+    {
+        NSLog(@"Command timed out.");
         connectStatus=CONNECTED;
         [self.delegate didInterfaceChangeConnectStatus:self]; //this will call the method for connections status chagnes.
         return false;
     }
+        
+    
     connectStatus=CONNECTED;
     [self.delegate didInterfaceChangeConnectStatus:self]; //this will call the method for connections status chagnes.
     return true;
