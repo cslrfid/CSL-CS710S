@@ -186,23 +186,26 @@ Insertion/update of tag data is based on binary searching algorithm for better e
  */
 - (BOOL)E710GetCountryEnum:(CSLBleInterface*)intf forData:(UInt32*)data;
 /**
- Read OEM data that contains product-specific information such as country code, antenna version and frequency channel information
+ Read reigster  data that contains product-specific information such as country code, antenna version and frequency channel information
  @param intf CSLBleInterface that references to the current reader instance
  @param addr Address of the memory location
  @param len Length of regsiter in bytes
  @param data UInt32 that holds the value of the data address
+ @param timeOut  int time in seconds where the function will get timed out
  @return TRUE if the operation is successful
  */
-- (BOOL)E710ReadRegister:(CSLBleInterface*)intf atAddr:(unsigned short)addr regLength:(Byte)len forData:(NSData**)data;
+- (BOOL)E710ReadRegister:(CSLBleInterface*)intf atAddr:(unsigned short)addr regLength:(Byte)len forData:(NSData**)data timeOutInSeconds:(int)timeOut;
 /**
- Write OEM data that contains product-specific information such as country code, antenna version and frequency channel information
+ Write register data that contains product-specific information such as country code, antenna version and frequency channel information
  @param intf CSLBleInterface that references to the current reader instance
  @param addr Address of the memory location
  @param len Length of regsiter in bytes
- @param data NSData pointer that reference the value of the data to be written
+ @param data NSData pointer that reference the location where data will the written
+ @param timeOut  int time in seconds where the function will get timed out
+ @param error_code Byte error code if operation fails
  @return TRUE if the operation is successful
  */
-- (BOOL)E710WriteRegister:(CSLBleInterface*)intf atAddr:(unsigned short)addr regLength:(Byte)len forData:(NSData*)data error:(Byte*)error_code;
+- (BOOL)E710WriteRegister:(CSLBleInterface*)intf atAddr:(unsigned short)addr regLength:(Byte)len forData:(NSData*)data timeOutInSeconds:(int)timeOut error:(Byte*)error_code;
 
 /**
 Set frequency band based on the region selected
