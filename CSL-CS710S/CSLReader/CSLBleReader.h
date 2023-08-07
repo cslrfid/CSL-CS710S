@@ -570,6 +570,20 @@ Set inventory round control
          MaxQueriesSinceValidEpc:(NSUInteger)max_queries_since_valid_epc
                     TargetToggle:(Byte)target_toggle;
 /**
+ Set mutlibank read configurations
+ @param set_number Yp to three sets
+ @param enable Eanble/disable
+ @param bank  Memory bank
+ @param address 4 bytes offset pointer
+ @param length  Number of words to read
+ @return TRUE if the operation is successful
+ */
+- (BOOL)E710MultibankReadConfig:(Byte)set_number
+                      IsEnabled:(BOOL)enable
+                           Bank:(Byte)bank
+                        Address:(UInt32)address
+                         Length:(Byte)length;
+/**
  Set duplicate eliminiation rolling window in seconds
  @param rollingWindowInSeconds Duplicate elimination rolling window in seconds.
  @return TRUE if the operation is successful
@@ -598,6 +612,11 @@ Set inventory round control
  @return TRUE if the operation is successful
  */
 - (BOOL)startInventory;
+/**
+ Start multibank inventory
+ @return TRUE if the operation is successful
+ */
+- (BOOL)E710StartMBInventory;
 /**
  Stop Inventory
  @return TRUE if the operation is successful

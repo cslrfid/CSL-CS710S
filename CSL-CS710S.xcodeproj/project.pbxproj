@@ -57,7 +57,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		8A5DD7E1287DBE8A00F89626 /* CSL_CS710.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CSL_CS710.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		8A5DD7E1287DBE8A00F89626 /* CSL_CS710S.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CSL_CS710S.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		8A5DD7E4287DBE8A00F89626 /* CSL_CS710.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CSL_CS710.h; sourceTree = "<group>"; };
 		8A5DD7EC287DBECB00F89626 /* CSLBleTag.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CSLBleTag.m; sourceTree = "<group>"; };
 		8A5DD7ED287DBECB00F89626 /* CSLBleReader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CSLBleReader.h; sourceTree = "<group>"; };
@@ -107,7 +107,7 @@
 		8A5DD7D7287DBE8A00F89626 = {
 			isa = PBXGroup;
 			children = (
-				8A5DD7E3287DBE8A00F89626 /* CSL-CS710 */,
+				8A5DD7E3287DBE8A00F89626 /* CSL-CS710S */,
 				8A5DD7E2287DBE8A00F89626 /* Products */,
 				CABE465C2A0ECE8D0003456A /* Frameworks */,
 			);
@@ -116,19 +116,19 @@
 		8A5DD7E2287DBE8A00F89626 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				8A5DD7E1287DBE8A00F89626 /* CSL_CS710.framework */,
+				8A5DD7E1287DBE8A00F89626 /* CSL_CS710S.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		8A5DD7E3287DBE8A00F89626 /* CSL-CS710 */ = {
+		8A5DD7E3287DBE8A00F89626 /* CSL-CS710S */ = {
 			isa = PBXGroup;
 			children = (
 				8A5DD804287DBED100F89626 /* CSLModel */,
 				8A5DD7EB287DBECB00F89626 /* CSLReader */,
 				8A5DD7E4287DBE8A00F89626 /* CSL_CS710.h */,
 			);
-			path = "CSL-CS710";
+			path = "CSL-CS710S";
 			sourceTree = "<group>";
 		};
 		8A5DD7EB287DBECB00F89626 /* CSLReader */ = {
@@ -212,9 +212,9 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		8A5DD7E0287DBE8A00F89626 /* CSL-CS710 */ = {
+		8A5DD7E0287DBE8A00F89626 /* CSL-CS710S */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 8A5DD7E8287DBE8A00F89626 /* Build configuration list for PBXNativeTarget "CSL-CS710" */;
+			buildConfigurationList = 8A5DD7E8287DBE8A00F89626 /* Build configuration list for PBXNativeTarget "CSL-CS710S" */;
 			buildPhases = (
 				8A5DD7DC287DBE8A00F89626 /* Headers */,
 				8A5DD7DD287DBE8A00F89626 /* Sources */,
@@ -226,9 +226,9 @@
 			);
 			dependencies = (
 			);
-			name = "CSL-CS710";
+			name = "CSL-CS710S";
 			productName = "CSL-CS108";
-			productReference = 8A5DD7E1287DBE8A00F89626 /* CSL_CS710.framework */;
+			productReference = 8A5DD7E1287DBE8A00F89626 /* CSL_CS710S.framework */;
 			productType = "com.apple.product-type.framework";
 		};
 /* End PBXNativeTarget section */
@@ -245,7 +245,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 8A5DD7DB287DBE8A00F89626 /* Build configuration list for PBXProject "CSL-CS710" */;
+			buildConfigurationList = 8A5DD7DB287DBE8A00F89626 /* Build configuration list for PBXProject "CSL-CS710S" */;
 			compatibilityVersion = "Xcode 13.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -258,7 +258,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				8A5DD7E0287DBE8A00F89626 /* CSL-CS710 */,
+				8A5DD7E0287DBE8A00F89626 /* CSL-CS710S */,
 			);
 		};
 /* End PBXProject section */
@@ -438,7 +438,7 @@
 					"@loader_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.csl.CSL-CS710";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.csl.CSL-CS710S";
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -469,7 +469,7 @@
 					"@loader_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.csl.CSL-CS710";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.csl.CSL-CS710S";
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -480,7 +480,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		8A5DD7DB287DBE8A00F89626 /* Build configuration list for PBXProject "CSL-CS710" */ = {
+		8A5DD7DB287DBE8A00F89626 /* Build configuration list for PBXProject "CSL-CS710S" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				8A5DD7E6287DBE8A00F89626 /* Debug */,
@@ -489,7 +489,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		8A5DD7E8287DBE8A00F89626 /* Build configuration list for PBXNativeTarget "CSL-CS710" */ = {
+		8A5DD7E8287DBE8A00F89626 /* Build configuration list for PBXNativeTarget "CSL-CS710S" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				8A5DD7E9287DBE8A00F89626 /* Debug */,

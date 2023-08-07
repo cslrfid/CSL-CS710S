@@ -256,6 +256,11 @@
 
 - (BOOL)E710GetCountryEnum:(CSLBleInterface*)intf forData:(UInt32*)data {
     
+    if (self.readerModelNumber != CS710) {
+        NSLog(@"RFID command failed. Invalid reader");
+        return false;
+    }
+    
     UInt16 countryEnum=0;
     NSData* regData;
     
@@ -274,6 +279,11 @@
 
 - (BOOL)E710ReadRegister:(CSLBleInterface*)intf atAddr:(unsigned short)addr regLength:(Byte)len forData:(NSData**)data timeOutInSeconds:(int)timeOut {
 
+    if (self.readerModelNumber != CS710) {
+        NSLog(@"RFID command failed. Invalid reader");
+        return false;
+    }
+    
     @synchronized(self) {
         if (connectStatus!=CONNECTED)
         {
@@ -390,6 +400,11 @@
 
 - (BOOL)E710WriteRegister:(CSLBleInterface*)intf atAddr:(unsigned short)addr regLength:(Byte)len forData:(NSData*)data timeOutInSeconds:(int)timeOut error:(Byte *)error_code {
 
+    if (self.readerModelNumber != CS710) {
+        NSLog(@"RFID command failed. Invalid reader");
+        return false;
+    }
+    
     @synchronized(self) {
         if (connectStatus!=CONNECTED)
         {
@@ -2355,6 +2370,11 @@
 - (BOOL)E710SetRfMode:(Byte)port_number
              mode:(NSUInteger)mode_id {
 
+    if (self.readerModelNumber != CS710) {
+        NSLog(@"RFID command failed. Invalid reader");
+        return false;
+    }
+    
     Byte errorCode;
     unsigned short startAddress = 0x303E + (16 * port_number);
     NSData* regData = [[NSData alloc] initWithBytes:(unsigned char[]){(mode_id & 0xFF00) >> 8, mode_id & 0xFF}
@@ -2385,6 +2405,11 @@
          MaxQueriesSinceValidEpc:(NSUInteger)max_queries_since_valid_epc
                     TargetToggle:(Byte)target_toggle {
 
+    if (self.readerModelNumber != CS710) {
+        NSLog(@"RFID command failed. Invalid reader");
+        return false;
+    }
+    
     Byte errorCode;
     unsigned short startAddress = 0x3035 + (16 * port_number);
     
@@ -2409,9 +2434,37 @@
     return true;
 
 }
-
+- (BOOL)E710MultibankReadConfig:(Byte)set_number
+                      IsEnabled:(BOOL)enable
+                           Bank:(Byte)bank
+                        Offset:(UInt32)offset
+                         Length:(Byte)length {
+    
+    if (self.readerModelNumber != CS710) {
+        NSLog(@"RFID command failed. Invalid reader");
+        return false;
+    }
+    
+    Byte errorCode;
+    unsigned short startAddress = 0x3270 + (set_number > 0 ? set_number - 1 : 0) * 7;
+    NSData* regData = [[NSData alloc] initWithBytes:(unsigned char[]){ enable ? 1 : 0, bank, (offset & 0xFF000000) >> 24, (offset & 0x00FF0000) >> 16, (offset & 0x0000FF00) >> 8, (offset & 0xFF), length }
+                                             length:7];
+    if (![self E710WriteRegister:self atAddr:startAddress regLength:7 forData:regData timeOutInSeconds:1 error:&errorCode])
+    {
+        NSLog(@"RFID set multibank read config failed. Error code: %d", errorCode);
+        return false;
+    }
+    NSLog(@"RFID set multibank read config sent: OK");
+    return true;
+    
+}
 - (BOOL)E710SetDuplicateEliminationRollingWindow:(Byte)rollingWindowInSeconds {
 
+    if (self.readerModelNumber != CS710) {
+        NSLog(@"RFID command failed. Invalid reader");
+        return false;
+    }
+    
     Byte errorCode;
     unsigned short startAddress = 0x3900;
     NSData* regData = [[NSData alloc] initWithBytes:(unsigned char[]){rollingWindowInSeconds}
@@ -2427,6 +2480,11 @@
 
 - (BOOL)E710SetIntraPacketDelay:(Byte)delayInMilliseconds {
 
+    if (self.readerModelNumber != CS710) {
+        NSLog(@"RFID command failed. Invalid reader");
+        return false;
+    }
+    
     Byte errorCode;
     unsigned short startAddress = 0x3908;
     NSData* regData = [[NSData alloc] initWithBytes:(unsigned char[]){delayInMilliseconds}
@@ -2446,6 +2504,11 @@
                       CrcError:(BOOL)crc_error
                       TagReadRate:(BOOL)tag_read_rate {
 
+    if (self.readerModelNumber == CS710) {
+        NSLog(@"RFID command failed. Invalid reader");
+        return false;
+    }
+    
     Byte errorCode;
     unsigned short startAddress = 0x3906;
     NSData* regData = [[NSData alloc] initWithBytes:(unsigned char[]){ 0x00, (keep_alive ? 0x01 : 0x00) | (inventory_end ? 0x2 : 0x00) | (crc_error ? 0x04 : 0x00) | (tag_read_rate ? 0x08 : 0x00)}
@@ -2691,6 +2754,11 @@
 
 - (BOOL)E710SetAntennaConfig:(Byte)port_number
               PortEnable:(BOOL)isEnable {
+    
+    if (self.readerModelNumber != CS710) {
+        NSLog(@"RFID command failed. Invalid reader");
+        return false;
+    }
     
     Byte errorCode;
     unsigned short startAddress = 0x3030 + (16 * port_number);
@@ -3540,6 +3608,11 @@
     return true;
 }
 
+
+- (BOOL)E710StartMBInventory {
+    //TODO:
+    return false;
+}
 
 -(BOOL)startInventory {
     
