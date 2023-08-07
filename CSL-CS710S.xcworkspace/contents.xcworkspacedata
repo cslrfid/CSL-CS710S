@@ -2,6 +2,6 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "group:CSL-CS710.xcodeproj">
+      location = "group:/Users/TurtleMac01/Documents/GitHub/CSL-CS710S/CSL-CS710S.xcodeproj">
    </FileRef>
 </Workspace>

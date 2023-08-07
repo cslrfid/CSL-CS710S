@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "8A5DD7E0287DBE8A00F89626"
-               BuildableName = "CSL_CS710.framework"
-               BlueprintName = "CSL-CS710"
-               ReferencedContainer = "container:CSL-CS710.xcodeproj">
+               BuildableName = "CSL_CS710S.framework"
+               BlueprintName = "CSL-CS710S"
+               ReferencedContainer = "container:CSL-CS710S.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -50,9 +50,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "8A5DD7E0287DBE8A00F89626"
-            BuildableName = "CSL_CS710.framework"
-            BlueprintName = "CSL-CS710"
-            ReferencedContainer = "container:CSL-CS710.xcodeproj">
+            BuildableName = "CSL_CS710S.framework"
+            BlueprintName = "CSL-CS710S"
+            ReferencedContainer = "container:CSL-CS710S.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
    </ProfileAction>
