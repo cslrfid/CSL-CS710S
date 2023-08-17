@@ -3476,9 +3476,14 @@
         return false;
     }
     
+    rangingTagCount=0;
+    uniqueTagCount=0;
+    
     if ([self E710SendShortOperationCommand:self CommandCode:0x10A2 timeOutInSeconds:1])
     {
         NSLog(@"Start compact inventory: OK");
+        self.isTagAccessMode=false;
+        connectStatus=TAG_OPERATIONS;
         return true;
 
     }
