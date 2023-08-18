@@ -329,6 +329,19 @@
     }
     else
     {
+        //for multiplebank inventory
+        [[CSLRfidAppEngine sharedAppEngine].reader E710MultibankReadConfig:0
+                                                                 IsEnabled:[CSLRfidAppEngine sharedAppEngine].settings.isMultibank1Enabled
+                                                                      Bank:[CSLRfidAppEngine sharedAppEngine].settings.multibank1
+                                                                    Offset:[CSLRfidAppEngine sharedAppEngine].settings.multibank1Offset
+                                                                    Length:[CSLRfidAppEngine sharedAppEngine].settings.multibank1Length];
+        
+        [[CSLRfidAppEngine sharedAppEngine].reader E710MultibankReadConfig:1
+                                                                 IsEnabled:[CSLRfidAppEngine sharedAppEngine].settings.isMultibank2Enabled && [CSLRfidAppEngine sharedAppEngine].settings.isMultibank2Enabled 
+                                                                      Bank:[CSLRfidAppEngine sharedAppEngine].settings.multibank2
+                                                                    Offset:[CSLRfidAppEngine sharedAppEngine].settings.multibank2Offset
+                                                                    Length:[CSLRfidAppEngine sharedAppEngine].settings.multibank2Length];
+        
         [[CSLRfidAppEngine sharedAppEngine].reader setLinkProfile:[CSLRfidAppEngine sharedAppEngine].settings.linkProfile];
         [[CSLRfidAppEngine sharedAppEngine].reader E710SetInventoryRoundControl:0
                                                                        InitialQ:[CSLRfidAppEngine sharedAppEngine].settings.QValue

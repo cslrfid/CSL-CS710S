@@ -4885,6 +4885,92 @@
                             }
                         }
                     }
+                    
+                    //Uplink packet 3003 (csl_tag_read_multibank_new)
+                    if ([[rfidPacketBufferInHexString substringWithRange:NSMakeRange(4, 4)] isEqualToString:@"49DC"] &&
+                        [[rfidPacketBufferInHexString substringWithRange:NSMakeRange(8, 4)] isEqualToString:@"3003"] &&
+                        ((datalen + 9) * 2) == [rfidPacketBufferInHexString length]) {
+                        
+                        //iterate through all the tag data
+                        int ptr=23;     //starting point of the tag data (9 + 15 offset)
+                        while(TRUE)
+                        {
+                            CSLBleTag* tag=[[CSLBleTag alloc] init];
+                            
+                            tag.PC =((((Byte *)[rfidPacketBuffer bytes])[ptr] << 8) & 0xFF00)+ ((Byte *)[rfidPacketBuffer bytes])[ptr+1];
+                            int rssiPtr = (9 + 4);
+                            Byte hb = (Byte)((Byte *)[rfidPacketBuffer bytes])[rssiPtr];
+                            Byte lb = (Byte)((Byte *)[rfidPacketBuffer bytes])[rssiPtr+1];
+                            tag.rssi = (Byte)[CSLBleReader E710DecodeRSSI:hb lowByte:lb];
+
+                            //for the case where we reaches to the end of the BLE packet but not the RFID response packet, where there will be partial packet to be returned from the next packet.  The partial tag data will be combined with the next packet being returned.
+                            //8100 (two bytes) + 8 bytes RFID packet header + payload length being calcuated ont he header
+                            if ((9 + datalen) > [rfidPacketBuffer length]) {
+                                //stop decoding and wait for the partial tag data to be appended in the next packet arrival
+                                NSLog(@"[decodePacketsInBufferAsync] partial tag data being returned.  Wait for next rfid response packet for complete tag data.");
+                                break;
+                            }
+                            
+                            tag.EPC=[rfidPacketBufferInHexString substringWithRange:NSMakeRange((ptr*2)+4, ((tag.PC >> 11) * 2) * 2)];
+                            int numberOfExtraBank =((Byte *)[rfidPacketBuffer bytes])[(ptr*2) + 4 + (((tag.PC >> 11) * 2) * 2) + 1];
+                            tag.DATA1Length=((Byte *)[rfidPacketBuffer bytes])[18];
+                            tag.DATA2Length=((Byte *)[rfidPacketBuffer bytes])[19];
+                            if (tag.DATA1Length) {
+                                tag.DATA1 = [rfidPacketBufferInHexString substringWithRange:NSMakeRange((ptr*2)+4+(((tag.PC >> 11) * 2) * 2), tag.DATA1Length * 4)];
+                            }
+                            if (tag.DATA2Length) {
+                                tag.DATA2 = [rfidPacketBufferInHexString substringWithRange:NSMakeRange((ptr*2)+4+(((tag.PC >> 11) * 2) * 2)+(tag.DATA1Length * 4), tag.DATA2Length * 4)];
+                            }
+
+                            tag.portNumber = ((Byte *)[rfidPacketBuffer bytes])[20];
+                            ptr+= datalen;
+                            [self.readerDelegate didReceiveTagResponsePacket:self tagReceived:tag]; //this will call the method for handling the tag response.
+                            
+                            NSLog(@"[decodePacketsInBufferAsync] Tag data found: PC=%04X EPC=%@ DATA1=%@ DATA2=%@ rssi=%d", tag.PC, tag.EPC, tag.DATA1, tag.DATA2, tag.rssi);
+                            tag.timestamp=[NSDate date];
+                            rangingTagCount++;
+                            
+                            @synchronized(filteredBuffer) {
+                                //insert the tag data to the sorted filteredBuffer if not duplicated
+                                
+                                //check and see if epc exists on the array using binary search
+                                NSRange searchRange = NSMakeRange(0, [filteredBuffer count]);
+                                NSUInteger findIndex = [filteredBuffer indexOfObject:tag
+                                                                    inSortedRange:searchRange
+                                                                          options:NSBinarySearchingInsertionIndex | NSBinarySearchingFirstEqual
+                                                                  usingComparator:^(id obj1, id obj2) {
+                                    NSString* str1; NSString* str2;
+                                    str1 = ([obj1 isKindOfClass:[CSLReaderBarcode class]]) ? ((CSLReaderBarcode*)obj1).barcodeValue : ((CSLBleTag*)obj1).EPC;
+                                    str2 = ([obj2 isKindOfClass:[CSLReaderBarcode class]]) ? ((CSLReaderBarcode*)obj2).barcodeValue : ((CSLBleTag*)obj2).EPC;
+                                    return [str1 compare:str2 options:NSCaseInsensitiveSearch];
+                                }];
+                                
+                                if ( findIndex >= [filteredBuffer count] )  //tag to be the largest.  Append to the end.
+                                {
+                                    [filteredBuffer insertObject:tag atIndex:findIndex];
+                                    uniqueTagCount++;
+                                }
+                                else if ( [[filteredBuffer[findIndex] isKindOfClass:[CSLReaderBarcode class]] ? ((CSLReaderBarcode*)filteredBuffer[findIndex]).barcodeValue : ((CSLBleTag*)filteredBuffer[findIndex]).EPC caseInsensitiveCompare:tag.EPC] != NSOrderedSame)
+                                {
+                                    //new tag found.  insert into buffer in sorted order
+                                    [filteredBuffer insertObject:tag atIndex:findIndex];
+                                    uniqueTagCount++;
+                                }
+                                else    //tag is duplicated, but will replace the existing tag information with the new one for updating the RRSI value.
+                                {
+                                    [filteredBuffer replaceObjectAtIndex:findIndex withObject:tag];
+                                }
+                            }
+                            
+                            //return when pointer reaches the end of the RFID response packet.
+                            if (ptr >= (datalen + 9)) {
+                                NSLog(@"[decodePacketsInBufferAsync] Finished decode all tags in packet.");
+                                NSLog(@"[decodePacketsInBufferAsync] Unique tags in buffer: %d", (unsigned int)[filteredBuffer count]);
+                                [rfidPacketBuffer setLength:0];
+                                break;
+                            }
+                        }
+                    }
                 }
             }
             else if ([eventCode isEqualToString:@"9000"]) {   //Power on barcode
