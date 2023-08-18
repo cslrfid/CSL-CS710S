@@ -574,14 +574,14 @@ Set inventory round control
  @param set_number Yp to three sets
  @param enable Eanble/disable
  @param bank  Memory bank
- @param address 4 bytes offset pointer
+ @param offset Word offset pointer
  @param length  Number of words to read
  @return TRUE if the operation is successful
  */
 - (BOOL)E710MultibankReadConfig:(Byte)set_number
                       IsEnabled:(BOOL)enable
                            Bank:(Byte)bank
-                        Address:(UInt32)address
+                        Offset:(UInt32)offset
                          Length:(Byte)length;
 /**
  Set duplicate eliminiation rolling window in seconds
