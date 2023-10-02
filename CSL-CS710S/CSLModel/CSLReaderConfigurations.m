@@ -160,6 +160,9 @@
     else
     {
         //CS710
+        [[CSLRfidAppEngine sharedAppEngine].reader E710SetAntennaConfig:0 PortEnable:TRUE];
+        [[CSLRfidAppEngine sharedAppEngine].reader setPower:0 PowerLevel:[CSLRfidAppEngine sharedAppEngine].settings.power];
+        [[CSLRfidAppEngine sharedAppEngine].reader setAntennaDwell:0 time:2000];
     }
 
 }
@@ -223,6 +226,30 @@
         //CS710S
     }
 
+}
++ (void) setConfigurationsForClearAllSelectionsAndMultibanks {
+    if ([CSLRfidAppEngine sharedAppEngine].reader.readerModelNumber==CS710) {
+        
+        //for multiplebank selection
+        [[CSLRfidAppEngine sharedAppEngine].reader E710MultibankReadConfig:0
+                                                                 IsEnabled:FALSE
+                                                                      Bank:[CSLRfidAppEngine sharedAppEngine].settings.multibank1
+                                                                    Offset:[CSLRfidAppEngine sharedAppEngine].settings.multibank1Offset
+                                                                    Length:[CSLRfidAppEngine sharedAppEngine].settings.multibank1Length];
+        
+        [[CSLRfidAppEngine sharedAppEngine].reader E710MultibankReadConfig:1
+                                                                 IsEnabled:FALSE
+                                                                      Bank:[CSLRfidAppEngine sharedAppEngine].settings.multibank2
+                                                                    Offset:[CSLRfidAppEngine sharedAppEngine].settings.multibank2Offset
+                                                                    Length:[CSLRfidAppEngine sharedAppEngine].settings.multibank2Length];
+        
+        //for tag selections
+        for (int i=0;i<7;i++) {
+            [[CSLRfidAppEngine sharedAppEngine].reader E710DeselectTag:i];
+        }
+        
+    }
+    
 }
 
 + (void) setConfigurationsForTags {

@@ -1885,6 +1885,67 @@
     return true;
 }
 
+- (BOOL)startTriggerKeyAutoReporting:(Byte)interval {
+    
+    @synchronized(self) {
+        if (connectStatus!=CONNECTED && connectStatus!=TAG_OPERATIONS)  //reader is not idling for downlink command and not performing inventory
+        {
+            NSLog(@"Reader is not connected or busy. Access failure");
+            return false;
+        }
+    }
+    [cmdRespQueue removeAllObjects];
+    
+    //Initialize data
+    CSLBlePacket* packet= [[CSLBlePacket alloc] init];
+    CSLBlePacket* recvPacket;
+    
+    NSLog(@"----------------------------------------------------------------------");
+    NSLog(@"Start trigger key auto reporting command...");
+    NSLog(@"----------------------------------------------------------------------");
+    //Send abort command
+    unsigned char startTriggerReporting[] = {0xA0, 0x08, interval};
+    packet.prefix=0xA7;
+    packet.connection = Bluetooth;
+    packet.payloadLength=0x03;
+    packet.deviceId=Notification;
+    packet.Reserve=0x82;
+    packet.direction=Downlink;
+    packet.crc1=0;
+    packet.crc2=0;
+    packet.payload=[NSData dataWithBytes:startTriggerReporting length:sizeof(startTriggerReporting)];
+    
+    NSLog(@"BLE packet sending: %@", [packet getPacketInHexString]);
+    [self sendPackets:packet];
+    
+    for (int i=0;i<COMMAND_TIMEOUT_5S;i++) { //receive data or time out in 5 seconds
+        if([cmdRespQueue count] != 0)
+            break;
+        [NSThread sleepForTimeInterval:0.001f];
+    }
+    
+    if ([cmdRespQueue count] !=0)
+    {
+        recvPacket=((CSLBlePacket *)[cmdRespQueue deqObject]);
+        if (memcmp([recvPacket.payload bytes], startTriggerReporting, 2) == 0 && ((Byte *)[recvPacket.payload bytes])[2] == 0x00)
+            NSLog(@"Start trigger key auto reporting sent: OK");
+        else {
+            NSLog(@"Start trigger key auto reporting sent: FAILED");
+            connectStatus=CONNECTED;
+            return false;
+        }
+        
+    }
+    else {
+        NSLog(@"Command timed out.");
+        NSLog(@"Start trigger key auto reporting: FAILED");
+        connectStatus=CONNECTED;
+        return false;
+    }
+    connectStatus=CONNECTED;
+    return true;
+}
+
 - (BOOL)getSingleBatteryReport  {
     
     @synchronized(self) {
@@ -2002,6 +2063,67 @@
     else {
         NSLog(@"Command timed out.");
         NSLog(@"Stop battery auto reporting: FAILED");
+        connectStatus=CONNECTED;
+        return false;
+    }
+    connectStatus=CONNECTED;
+    return true;
+}
+
+- (BOOL)stopTriggerKeyAutoReporting {
+    
+    @synchronized(self) {
+        if (connectStatus!=CONNECTED && connectStatus!=TAG_OPERATIONS)  //reader is not idling for downlink command and not performing inventory
+        {
+            NSLog(@"Reader is not connected or busy. Access failure");
+            return false;
+        }
+    }
+    [cmdRespQueue removeAllObjects];
+    
+    //Initialize data
+    CSLBlePacket* packet= [[CSLBlePacket alloc] init];
+    CSLBlePacket* recvPacket;
+    
+    NSLog(@"----------------------------------------------------------------------");
+    NSLog(@"Stop trigger key auto reporting command...");
+    NSLog(@"----------------------------------------------------------------------");
+    //Send abort command
+    unsigned char stopTriggerReporting[] = {0xA0, 0x09};
+    packet.prefix=0xA7;
+    packet.connection = Bluetooth;
+    packet.payloadLength=0x02;
+    packet.deviceId=Notification;
+    packet.Reserve=0x82;
+    packet.direction=Downlink;
+    packet.crc1=0;
+    packet.crc2=0;
+    packet.payload=[NSData dataWithBytes:stopTriggerReporting length:sizeof(stopTriggerReporting)];
+    
+    NSLog(@"BLE packet sending: %@", [packet getPacketInHexString]);
+    [self sendPackets:packet];
+    
+    for (int i=0;i<COMMAND_TIMEOUT_5S;i++) { //receive data or time out in 5 seconds
+        if([cmdRespQueue count] != 0)
+            break;
+        [NSThread sleepForTimeInterval:0.001f];
+    }
+    
+    if ([cmdRespQueue count] !=0)
+    {
+        recvPacket=((CSLBlePacket *)[cmdRespQueue deqObject]);
+        if (memcmp([recvPacket.payload bytes], stopTriggerReporting, 2) == 0 && ((Byte *)[recvPacket.payload bytes])[2] == 0x00)
+            NSLog(@"Stop trigger key auto reporting sent: OK");
+        else {
+            NSLog(@"Stop trigger key auto reporting sent: FAILED");
+            connectStatus=CONNECTED;
+            return false;
+        }
+        
+    }
+    else {
+        NSLog(@"Command timed out.");
+        NSLog(@"Stop trigger key auto reporting: FAILED");
         connectStatus=CONNECTED;
         return false;
     }
@@ -3491,7 +3613,6 @@
     if ([self E710SendShortOperationCommand:self CommandCode:0x10A2 timeOutInSeconds:1])
     {
         NSLog(@"Start compact inventory: OK");
-        self.isTagAccessMode=false;
         connectStatus=TAG_OPERATIONS;
         return true;
 
@@ -3512,7 +3633,6 @@
     if ([self E710SendShortOperationCommand:self CommandCode:0x10A4 timeOutInSeconds:1])
     {
         NSLog(@"Start mulit-bank inventory: OK");
-        self.isTagAccessMode=false;
         connectStatus=TAG_OPERATIONS;
         return true;
 
@@ -4577,6 +4697,16 @@
                 [rfidPacketBuffer setLength:0];
                 [cmdRespQueue enqObject:packet];
             }
+            else if ([eventCode isEqualToString:@"A008"]) {
+                NSLog(@"[decodePacketsInBufferAsync] Trigger key auto reporting: ON");
+                [rfidPacketBuffer setLength:0];
+                [cmdRespQueue enqObject:packet];
+            }
+            else if ([eventCode isEqualToString:@"A009"]) {
+                NSLog(@"[decodePacketsInBufferAsync] Trigger key auto reporting: OFF");
+                [rfidPacketBuffer setLength:0];
+                [cmdRespQueue enqObject:packet];
+            }
             else if ([eventCode isEqualToString:@"A000"]) {
                 NSLog(@"[decodePacketsInBufferAsync] Battery auto reporting Return: 0x%@", [rfidPacketBufferInHexString substringWithRange:NSMakeRange(4,4)]);
                 if (connectStatus==TAG_OPERATIONS)
@@ -4833,6 +4963,19 @@
                         continue;
                     }
                     
+                    //Uplink packet 3006  (csl_tag_read_epc_only_new) return PC+EPC during tag access
+                    if ([[rfidPacketBufferInHexString substringWithRange:NSMakeRange(4, 4)] isEqualToString:@"49DC"] &&
+                        [[rfidPacketBufferInHexString substringWithRange:NSMakeRange(8, 4)] isEqualToString:@"3001"] &&
+                        ((datalen + 9) * 2) == [rfidPacketBufferInHexString length]) {
+                        //TODO:
+                        
+
+                        }
+                        [rfidPacketBuffer setLength:0];
+                        continue;
+                    }
+                    
+                    
                     //Uplink packet 3006 (csl_tag_read_compact)
                     if ([[rfidPacketBufferInHexString substringWithRange:NSMakeRange(4, 4)] isEqualToString:@"49DC"] &&
                         [[rfidPacketBufferInHexString substringWithRange:NSMakeRange(8, 4)] isEqualToString:@"3006"] &&
@@ -4932,7 +5075,7 @@
                             CSLBleTag* tag=[[CSLBleTag alloc] init];
                             
                             tag.PC =((((Byte *)[rfidPacketBuffer bytes])[ptr+22] << 8) & 0xFF00)+ ((Byte *)[rfidPacketBuffer bytes])[ptr+23];
-                            int rssiPtr = (7 + 4);  //uplink packet header +0x3003 packet offset
+                            int rssiPtr = (2 + 7 + 4);  //uplink packet header +0x3003 packet offset
                             Byte hb = (Byte)((Byte *)[rfidPacketBuffer bytes])[rssiPtr];
                             Byte lb = (Byte)((Byte *)[rfidPacketBuffer bytes])[rssiPtr+1];
                             tag.rssi = (Byte)[CSLBleReader E710DecodeRSSI:hb lowByte:lb];
@@ -5073,6 +5216,16 @@
             }
             else if ([eventCode isEqualToString:@"A003"]) {
                 NSLog(@"[decodePacketsInBufferAsync] Battery auto reporting: OFF");
+                [rfidPacketBuffer setLength:0];
+                [cmdRespQueue enqObject:packet];
+            }
+            else if ([eventCode isEqualToString:@"A008"]) {
+                NSLog(@"[decodePacketsInBufferAsync] Trigger key auto reporting: ON");
+                [rfidPacketBuffer setLength:0];
+                [cmdRespQueue enqObject:packet];
+            }
+            else if ([eventCode isEqualToString:@"A009"]) {
+                NSLog(@"[decodePacketsInBufferAsync] Trigger key auto reporting: OFF");
                 [rfidPacketBuffer setLength:0];
                 [cmdRespQueue enqObject:packet];
             }

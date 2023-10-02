@@ -354,15 +354,27 @@ Once it is started, the delegate will be triggered everytime when a battery leve
  */
 - (BOOL)startBatteryAutoReporting;
 /**
- Stop battery level reporting (notification every 5 seconds)
+ Start btrigger key state auto reporting (notification in seconds specified)
+Once it is started, the delegate will be triggered everytime when a trigger key notification is being returned
+ @param interval  time in seconds
  @return TRUE if the operation is successful
  */
-- (BOOL)getSingleBatteryReport;
+- (BOOL)startTriggerKeyAutoReporting:(Byte)interval;
 /**
  Get single battery reporting
  @return TRUE if the operation is successful
  */
+- (BOOL)getSingleBatteryReport;
+/**
+ Stop battery level reporting (notification every 5 seconds)
+ @return TRUE if the operation is successful
+ */
 - (BOOL)stopBatteryAutoReporting;
+/**
+ Stop key state auto reporting
+ @return TRUE if the operation is successful
+ */
+- (BOOL)stopTriggerKeyAutoReporting;
 /**
  Obtain RFID module firmware version
  @param versionInfo Pointer to an instance of NSString that receives the RFID firmware version
@@ -636,5 +648,13 @@ Set inventory round control
  E710 Start the data packet decoding routine, where a selector will be running on a background thread and decode the received packet if commands were being sent out previously.  Results will be returned to the recvQueue (for asynchornous commands)  and to cmdRespQueue (for synchronous commands)
  */
 - (void)E710DecodePacketsInBufferAsync;
+/**
+ Send short operation  command
+ @param intf  CSLBleInterface that references to the current reader instance
+ @param code command code
+ @param timeOut time out for packet response
+ @return TRUE if the operation is successful
+ */
+- (BOOL)E710SendShortOperationCommand:(CSLBleInterface*)intf CommandCode:(UInt16)code timeOutInSeconds:(int)timeOut;
 
 @end
