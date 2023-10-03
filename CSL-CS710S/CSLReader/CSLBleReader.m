@@ -4968,9 +4968,6 @@
                         [[rfidPacketBufferInHexString substringWithRange:NSMakeRange(8, 4)] isEqualToString:@"3001"] &&
                         ((datalen + 9) * 2) == [rfidPacketBufferInHexString length]) {
                         //TODO:
-                        
-
-                        }
                         [rfidPacketBuffer setLength:0];
                         continue;
                     }
