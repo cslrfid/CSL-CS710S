@@ -118,6 +118,22 @@ Select EPC match mask
  */
 - (BOOL) selectTag:(MEMORYBANK)maskbank maskPointer:(UInt16)ptr maskLength:(UInt32)length maskData:(NSData*)mask;
 /**
+ Select tag before tag access (read/write) operation
+ @param set_number  tag select set number
+ @param maskbank Mask bank to be used for tag selection
+ @param ptr Pointer to the start of the memory address, to be expressed by bits
+ @param length Size of the mask expressed in number of bits
+ @param mask mask value
+ @return TRUE if the operation is successful
+ */
+- (BOOL) E710SelectTag:(Byte)set_number maskBank:(MEMORYBANK)maskbank maskPointer:(UInt32)ptr maskLength:(Byte)length maskData:(NSData*)mask;
+/**
+ De-select the set number
+ @param set_number  tag select set number
+ @return TRUE if the operation is successful
+ */
+- (BOOL) E710DeselectTag:(Byte)set_number;
+/**
  Select tag before tag access (search) operation
  @param maskbank Mask bank to be used for tag selection
  @param ptr Pointer to the start of the memory address, to be expressed by bits
@@ -139,6 +155,19 @@ Select EPC match mask
  @return TRUE if the operation is successful
  */
 - (BOOL) startTagMemoryRead:(MEMORYBANK)bank dataOffset:(UInt16)offset dataCount:(UInt16)count ACCPWD:(UInt32)password maskBank:(MEMORYBANK)mask_bank maskPointer:(UInt16)mask_pointer maskLength:(UInt32)mask_Length maskData:(NSData*)mask_data;
+/**
+ Send singular tag read command
+ @param bank Bank to be read from
+ @param offset Pointer to the start of the memory address, by the number of words
+ @param count Number of words to be read
+ @param password Access password for the tag
+ @param mask_bank Mask bank to be used for tag selection
+ @param mask_pointer Pointer to the start of the memory address, to be expressed by bits
+ @param mask_Length Size of the mask expressed in number of bits
+ @param mask_data mask value
+ @return TRUE if the operation is successful
+ */
+- (BOOL) E710StartTagMemoryRead:(MEMORYBANK)bank dataOffset:(UInt16)offset dataCount:(UInt16)count ACCPWD:(UInt32)password maskBank:(MEMORYBANK)mask_bank maskPointer:(UInt16)mask_pointer maskLength:(UInt32)mask_Length maskData:(NSData*)mask_data;
 /**
  Send singular tag write command
  @param bank Bank to be writing to
@@ -210,6 +239,12 @@ Select EPC match mask
  @return TRUE if the operation is successful
  */
 - (BOOL) selectTagForInventory:(MEMORYBANK)maskbank maskPointer:(UInt16)ptr maskLength:(UInt32)length maskData:(NSData*)mask sel_action:(Byte)action delayTime:(Byte)delay;
+/**
+ Short command for reading multi-bank data
+ @return TRUE if the operation is successful
+ */
+- (BOOL)E710SSCSLRFIDReadMB;
+
 @end
 
 NS_ASSUME_NONNULL_END

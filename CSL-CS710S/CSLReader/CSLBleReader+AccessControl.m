@@ -1696,6 +1696,98 @@
     return result;
 }
 
+- (BOOL) E710SelectTag:(Byte)set_number maskBank:(MEMORYBANK)maskbank maskPointer:(UInt32)ptr maskLength:(Byte)length maskData:(NSData*)mask {
+    
+    Byte errorCode;
+    NSData* regData;
+    
+    NSLog(@"Tag select mask in hex: %@", [CSLBleReader convertDataToHexString:mask] );
+    
+    //Select the desired tag
+    if (self.readerModelNumber != CS710) {
+        NSLog(@"RFID command failed. Invalid reader");
+        return false;
+    }
+    
+    unsigned short startAddress = 0x3140 + set_number * 42;
+    
+    //bank to be selected
+    regData = [[NSData alloc] initWithBytes:(unsigned char[]){ (Byte)maskbank } length:1];
+    if (![self E710WriteRegister:self atAddr:startAddress+1 regLength:1 forData:regData timeOutInSeconds:1 error:&errorCode])
+    {
+        NSLog(@"RFID SelectConfiguration bank select failed. Error code: %d", errorCode);
+        return false;
+    }
+    
+    //select offset (number of bits)
+    regData = [[NSData alloc] initWithBytes:(unsigned char[]){ ptr & 0xFF000000 >> 24, ptr & 0x00FF0000 >> 16, ptr & 0x0000FF00 >> 8, ptr & 0x000000FF } length:4];
+    if (![self E710WriteRegister:self atAddr:startAddress+2 regLength:4 forData:regData timeOutInSeconds:1 error:&errorCode])
+    {
+        NSLog(@"RFID SelectConfiguration set offset failed. Error code: %d", errorCode);
+        return false;
+    }
+
+    //select length (number of bits)
+    regData = [[NSData alloc] initWithBytes:(unsigned char[]){ length } length:1];
+    if (![self E710WriteRegister:self atAddr:startAddress+6 regLength:1 forData:regData timeOutInSeconds:1 error:&errorCode])
+    {
+        NSLog(@"RFID SelectConfiguration set length failed. Error code: %d", errorCode);
+        return false;
+    }
+    
+    //mask data
+    if (![self E710WriteRegister:self atAddr:startAddress+7 regLength:[mask length] forData:mask timeOutInSeconds:1 error:&errorCode])
+    {
+        NSLog(@"RFID SelectConfiguration set mask failed. Error code: %d", errorCode);
+        return false;
+    }
+    
+    regData = [[NSData alloc] initWithBytes:(unsigned char[]){ 1 } length:1];
+    
+    //AntennaPortConfig target toggle = 1
+    if (![self E710WriteRegister:self atAddr:0x303D regLength:1 forData:regData timeOutInSeconds:1 error:&errorCode])
+    {
+        NSLog(@"RFID SntennaPortConfig set toggle failed. Error code: %d", errorCode);
+        return false;
+    }
+    
+    //enable set
+    if (![self E710WriteRegister:self atAddr:startAddress regLength:1 forData:regData timeOutInSeconds:1 error:&errorCode])
+    {
+        NSLog(@"RFID SelectConfiguration enable set failed. Error code: %d", errorCode);
+        return false;
+    }
+    
+    NSLog(@"RFID SelectConfiguration sent: OK");
+    return true;
+}
+
+- (BOOL) E710DeselectTag:(Byte)set_number {
+    
+    Byte errorCode;
+    NSData* regData;
+    
+    //Select the desired tag
+    if (self.readerModelNumber != CS710) {
+        NSLog(@"RFID command failed. Invalid reader");
+        return false;
+    }
+    
+    unsigned short startAddress = 0x3140 + set_number * 42;
+    
+    //bank to be selected
+    regData = [[NSData alloc] initWithBytes:(unsigned char[]){ 0 } length:1];
+    //disable set
+    if (![self E710WriteRegister:self atAddr:startAddress regLength:1 forData:regData timeOutInSeconds:1 error:&errorCode])
+    {
+        NSLog(@"RFID SelectConfiguration disable set failed. Error code: %d", errorCode);
+        return false;
+    }
+    
+    NSLog(@"RFID SelectConfiguration sent: OK");
+    return true;
+}
+
 - (BOOL) selectTagForSearch:(MEMORYBANK)maskbank maskPointer:(UInt16)ptr maskLength:(UInt32)length maskData:(NSData*)mask {
     
     BOOL result=true;
@@ -1806,6 +1898,60 @@
     [self.delegate didInterfaceChangeConnectStatus:self]; //this will call the method for connections status chagnes.
     return result;
 }
+
+- (BOOL) E710StartTagMemoryRead:(MEMORYBANK)bank dataOffset:(UInt16)offset dataCount:(UInt16)count ACCPWD:(UInt32)password maskBank:(MEMORYBANK)mask_bank maskPointer:(UInt16)mask_pointer maskLength:(UInt32)mask_Length maskData:(NSData*)mask_data {
+    
+    BOOL result=true;
+    Byte errorCode;
+    NSData* regData;
+    
+    //if mask data is not nil, tag will be selected before reading
+    if (mask_data != nil)
+        [self E710SelectTag:0 maskBank:mask_bank maskPointer:(bank == EPC ? 32 : 0) maskLength:mask_Length maskData:mask_data];
+    
+    //set access password
+    regData = [[NSData alloc] initWithBytes:(unsigned char[]){ password & 0xFF000000 >> 24, password & 0x00FF0000 >> 16, password & 0x0000FF00 >> 8, password & 0x000000FF } length:4];
+    if (![self E710WriteRegister:self atAddr:0x38A6 regLength:4 forData:regData timeOutInSeconds:1 error:&errorCode])
+    {
+        NSLog(@"E710StartTagMemoryRead failed. Failed to set access password.  Error code: %d", errorCode);
+        connectStatus=CONNECTED;
+        [self.delegate didInterfaceChangeConnectStatus:self]; //this will call the method for connections status chagnes.
+        return false;
+    }
+    
+    //for multiplebank read configurations
+    if (![self E710MultibankReadConfig:0 IsEnabled:TRUE Bank:bank Offset:offset Length:count]) {
+        NSLog(@"E710StartTagMemoryRead failed. Failed to set mulit-bank read.  Error code: %d", errorCode);
+        connectStatus=CONNECTED;
+        [self.delegate didInterfaceChangeConnectStatus:self]; //this will call the method for connections status chagnes.
+        return false;
+    }
+    
+    result = [self E710SSCSLRFIDReadMB];
+    
+    connectStatus=CONNECTED;
+    [self.delegate didInterfaceChangeConnectStatus:self]; //this will call the method for connections status chagnes.
+    return result;
+}
+
+- (BOOL)E710SSCSLRFIDReadMB {
+
+    if (self.readerModelNumber != CS710) {
+        NSLog(@"RFID command failed. Invalid reader");
+        return false;
+    }
+    
+    if ([self E710SendShortOperationCommand:self CommandCode:0x10B1 timeOutInSeconds:1])
+    {
+        NSLog(@"Read mulit-bank data: OK");
+        return true;
+
+    }
+    NSLog(@"Read mulit-bank data: FAILED");
+    return false;
+    
+}
+
 
 - (BOOL) startTagMemoryWrite:(MEMORYBANK)bank dataOffset:(UInt16)offset dataCount:(UInt16)count writeData:(NSData*)data ACCPWD:(UInt32)password maskBank:(MEMORYBANK)mask_bank maskPointer:(UInt16)mask_pointer maskLength:(UInt32)mask_Length maskData:(NSData*)mask_data {
     
