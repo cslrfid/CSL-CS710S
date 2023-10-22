@@ -124,9 +124,19 @@ Select EPC match mask
  @param ptr Pointer to the start of the memory address, to be expressed by bits
  @param length Size of the mask expressed in number of bits
  @param mask mask value
+ @param target  target value
+ @param action action  value
+ @param post_delay  post configuration delay  value
  @return TRUE if the operation is successful
  */
-- (BOOL) E710SelectTag:(Byte)set_number maskBank:(MEMORYBANK)maskbank maskPointer:(UInt32)ptr maskLength:(Byte)length maskData:(NSData*)mask;
+- (BOOL) E710SelectTag:(Byte)set_number
+              maskBank:(MEMORYBANK)maskbank
+           maskPointer:(UInt32)ptr
+            maskLength:(Byte)length
+              maskData:(NSData*)mask
+                target:(Byte)target
+                action:(Byte)action
+       postConfigDelay:(Byte)post_delay;
 /**
  De-select the set number
  @param set_number  tag select set number

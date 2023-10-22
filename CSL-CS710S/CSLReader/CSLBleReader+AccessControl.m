@@ -1696,7 +1696,14 @@
     return result;
 }
 
-- (BOOL) E710SelectTag:(Byte)set_number maskBank:(MEMORYBANK)maskbank maskPointer:(UInt32)ptr maskLength:(Byte)length maskData:(NSData*)mask {
+- (BOOL) E710SelectTag:(Byte)set_number
+              maskBank:(MEMORYBANK)maskbank
+           maskPointer:(UInt32)ptr
+            maskLength:(Byte)length
+              maskData:(NSData*)mask
+                target:(Byte)target
+                action:(Byte)action
+       postConfigDelay:(Byte)post_delay {
     
     Byte errorCode;
     NSData* regData;
@@ -1720,7 +1727,7 @@
     }
     
     //select offset (number of bits)
-    regData = [[NSData alloc] initWithBytes:(unsigned char[]){ ptr & 0xFF000000 >> 24, ptr & 0x00FF0000 >> 16, ptr & 0x0000FF00 >> 8, ptr & 0x000000FF } length:4];
+    regData = [[NSData alloc] initWithBytes:(unsigned char[]){ (ptr & 0xFF000000) >> 24, (ptr & 0x00FF0000) >> 16, (ptr & 0x0000FF00) >> 8, ptr & 0x000000FF } length:4];
     if (![self E710WriteRegister:self atAddr:startAddress+2 regLength:4 forData:regData timeOutInSeconds:1 error:&errorCode])
     {
         NSLog(@"RFID SelectConfiguration set offset failed. Error code: %d", errorCode);
@@ -1742,15 +1749,28 @@
         return false;
     }
     
-    regData = [[NSData alloc] initWithBytes:(unsigned char[]){ 1 } length:1];
-    
-    //AntennaPortConfig target toggle = 1
-    if (![self E710WriteRegister:self atAddr:0x303D regLength:1 forData:regData timeOutInSeconds:1 error:&errorCode])
+    regData = [[NSData alloc] initWithBytes:(unsigned char[]){ target } length:1];
+    if (![self E710WriteRegister:self atAddr:startAddress+39 regLength:1 forData:regData timeOutInSeconds:1 error:&errorCode])
     {
-        NSLog(@"RFID SntennaPortConfig set toggle failed. Error code: %d", errorCode);
+        NSLog(@"RFID SelectConfiguration set target failed. Error code: %d", errorCode);
         return false;
     }
     
+    regData = [[NSData alloc] initWithBytes:(unsigned char[]){ action } length:1];
+    if (![self E710WriteRegister:self atAddr:startAddress+40 regLength:1 forData:regData timeOutInSeconds:1 error:&errorCode])
+    {
+        NSLog(@"RFID SelectConfiguration set action failed. Error code: %d", errorCode);
+        return false;
+    }
+    
+    regData = [[NSData alloc] initWithBytes:(unsigned char[]){ post_delay } length:1];
+    if (![self E710WriteRegister:self atAddr:startAddress+41 regLength:1 forData:regData timeOutInSeconds:1 error:&errorCode])
+    {
+        NSLog(@"RFID SelectConfiguration set post configuration delay failed. Error code: %d", errorCode);
+        return false;
+    }
+    
+    regData = [[NSData alloc] initWithBytes:(unsigned char[]){ 1 } length:1];
     //enable set
     if (![self E710WriteRegister:self atAddr:startAddress regLength:1 forData:regData timeOutInSeconds:1 error:&errorCode])
     {
@@ -1907,10 +1927,17 @@
     
     //if mask data is not nil, tag will be selected before reading
     if (mask_data != nil)
-        [self E710SelectTag:0 maskBank:mask_bank maskPointer:(bank == EPC ? 32 : 0) maskLength:mask_Length maskData:mask_data];
+        [self E710SelectTag:0
+                   maskBank:mask_bank
+                maskPointer:mask_pointer
+                 maskLength:mask_Length
+                   maskData:mask_data
+                     target:4
+                     action:0
+            postConfigDelay:0];
     
     //set access password
-    regData = [[NSData alloc] initWithBytes:(unsigned char[]){ password & 0xFF000000 >> 24, password & 0x00FF0000 >> 16, password & 0x0000FF00 >> 8, password & 0x000000FF } length:4];
+    regData = [[NSData alloc] initWithBytes:(unsigned char[]){ (password & 0xFF000000) >> 24, (password & 0x00FF0000 )>> 16, (password & 0x0000FF00) >> 8, password & 0x000000FF } length:4];
     if (![self E710WriteRegister:self atAddr:0x38A6 regLength:4 forData:regData timeOutInSeconds:1 error:&errorCode])
     {
         NSLog(@"E710StartTagMemoryRead failed. Failed to set access password.  Error code: %d", errorCode);
@@ -1919,8 +1946,12 @@
         return false;
     }
     
-    //for multiplebank read configurations
-    if (![self E710MultibankReadConfig:0 IsEnabled:TRUE Bank:bank Offset:offset Length:count]) {
+    //for Multi-bank read configurations
+    //For EPC bank, read one full
+    Byte MBOffset = bank == EPC ? offset - 1 : offset;
+    if (MBOffset < 0)
+        MBOffset = 0;
+    if (![self E710MultibankReadConfig:0 IsEnabled:TRUE Bank:bank Offset:MBOffset Length:(bank == EPC ? count+1 : count)]) {
         NSLog(@"E710StartTagMemoryRead failed. Failed to set mulit-bank read.  Error code: %d", errorCode);
         connectStatus=CONNECTED;
         [self.delegate didInterfaceChangeConnectStatus:self]; //this will call the method for connections status chagnes.

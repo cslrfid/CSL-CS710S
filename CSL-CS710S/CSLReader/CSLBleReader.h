@@ -467,10 +467,12 @@ FrequencyChannel:(Byte)fChannel
 Set antenna configuration (enable/disable)
 @param port_number antenna port to be configured
 @param isEnable Enable/disable antenna port
+@param toggle  Target Toggle (0 = No, 1 = Yes)
 @return TRUE if the operation is successful
 */
 - (BOOL)E710SetAntennaConfig:(Byte)port_number
-              PortEnable:(BOOL)isEnable;
+                  PortEnable:(BOOL)isEnable
+                TargetToggle:(BOOL)toggle;
 /**
 Set antenna inventory count
 @param count Number of inventory rounds for current port

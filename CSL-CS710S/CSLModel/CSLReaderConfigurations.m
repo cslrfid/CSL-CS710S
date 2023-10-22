@@ -96,8 +96,8 @@
     }
     else
     {
-        [[CSLRfidAppEngine sharedAppEngine].reader E710SetAntennaConfig:0 PortEnable:TRUE];
-        [[CSLRfidAppEngine sharedAppEngine].reader setPower:0 PowerLevel:[CSLRfidAppEngine sharedAppEngine].settings.power];
+        [[CSLRfidAppEngine sharedAppEngine].reader E710SetAntennaConfig:0 PortEnable:TRUE TargetToggle:TRUE];
+        [[CSLRfidAppEngine sharedAppEngine].reader setPower:0 PowerLevel:[CSLRfidAppEngine sharedAppEngine].settings.power / 10];
         [[CSLRfidAppEngine sharedAppEngine].reader setAntennaDwell:0 time:2000];
     }
 
@@ -160,9 +160,25 @@
     else
     {
         //CS710
-        [[CSLRfidAppEngine sharedAppEngine].reader E710SetAntennaConfig:0 PortEnable:TRUE];
-        [[CSLRfidAppEngine sharedAppEngine].reader setPower:0 PowerLevel:[CSLRfidAppEngine sharedAppEngine].settings.power];
+        [[CSLRfidAppEngine sharedAppEngine].reader E710SetAntennaConfig:0 PortEnable:TRUE TargetToggle:TRUE];
+        [[CSLRfidAppEngine sharedAppEngine].reader setPower:0 PowerLevel:[CSLRfidAppEngine sharedAppEngine].settings.power / 10];
         [[CSLRfidAppEngine sharedAppEngine].reader setAntennaDwell:0 time:2000];
+        [[CSLRfidAppEngine sharedAppEngine].reader E710SetInventoryRoundControl:0
+                                                                       InitialQ:[CSLRfidAppEngine sharedAppEngine].settings.QValue
+                                                                           MaxQ:15
+                                                                           MinQ:7
+                                                                  NumMinQCycles:6
+                                                                     FixedQMode:[CSLRfidAppEngine sharedAppEngine].settings.algorithm == FIXEDQ ? TRUE : FALSE
+                                                              QIncreaseUseQuery:TRUE
+                                                              QDecreaseUseQuery:TRUE
+                                                                        Session:[CSLRfidAppEngine sharedAppEngine].settings.session
+                                                              SelInQueryCommand:0
+                                                                    QueryTarget:[CSLRfidAppEngine sharedAppEngine].settings.target == ToggleAB ? A : [CSLRfidAppEngine sharedAppEngine].settings.target
+                                                                  HaltOnAllTags:0
+                                                                   FastIdEnable:[CSLRfidAppEngine sharedAppEngine].settings.FastId
+                                                                 TagFocusEnable:[CSLRfidAppEngine sharedAppEngine].settings.tagFocus
+                                                        MaxQueriesSinceValidEpc:8
+                                                                   TargetToggle:[CSLRfidAppEngine sharedAppEngine].settings.target == ToggleAB ? TRUE : FALSE];
     }
 
 }
