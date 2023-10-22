@@ -1983,6 +1983,24 @@
     
 }
 
+- (BOOL)E710SSCSLRFIDWriteMB {
+
+    if (self.readerModelNumber != CS710) {
+        NSLog(@"RFID command failed. Invalid reader");
+        return false;
+    }
+    
+    if ([self E710SendShortOperationCommand:self CommandCode:0x10B2 timeOutInSeconds:1])
+    {
+        NSLog(@"Write mulit-bank data: OK");
+        return true;
+
+    }
+    NSLog(@"Write mulit-bank data: FAILED");
+    return false;
+    
+}
+
 
 - (BOOL) startTagMemoryWrite:(MEMORYBANK)bank dataOffset:(UInt16)offset dataCount:(UInt16)count writeData:(NSData*)data ACCPWD:(UInt32)password maskBank:(MEMORYBANK)mask_bank maskPointer:(UInt16)mask_pointer maskLength:(UInt32)mask_Length maskData:(NSData*)mask_data {
     
@@ -2124,6 +2142,49 @@
         return FALSE;
     }
 
+    connectStatus=CONNECTED;
+    [self.delegate didInterfaceChangeConnectStatus:self]; //this will call the method for connections status chagnes.
+    return result;
+}
+
+- (BOOL) E710StartTagMemoryWrite:(MEMORYBANK)bank dataOffset:(UInt16)offset dataCount:(UInt16)count writeData:(NSData*)data ACCPWD:(UInt32)password maskBank:(MEMORYBANK)mask_bank maskPointer:(UInt16)mask_pointer maskLength:(UInt32)mask_Length maskData:(NSData*)mask_data {
+
+    BOOL result=true;
+    Byte errorCode;
+    NSData* regData;
+    
+    //if mask data is not nil, tag will be selected before reading
+    if (mask_data != nil)
+        [self E710SelectTag:0
+                   maskBank:mask_bank
+                maskPointer:mask_pointer
+                 maskLength:mask_Length
+                   maskData:mask_data
+                     target:4
+                     action:0
+            postConfigDelay:0];
+    
+    //set access password
+    regData = [[NSData alloc] initWithBytes:(unsigned char[]){ (password & 0xFF000000) >> 24, (password & 0x00FF0000 )>> 16, (password & 0x0000FF00) >> 8, password & 0x000000FF } length:4];
+    if (![self E710WriteRegister:self atAddr:0x38A6 regLength:4 forData:regData timeOutInSeconds:1 error:&errorCode])
+    {
+        NSLog(@"E710StartTagMemoryWrite failed. Failed to set access password.  Error code: %d", errorCode);
+        connectStatus=CONNECTED;
+        [self.delegate didInterfaceChangeConnectStatus:self]; //this will call the method for connections status chagnes.
+        return false;
+    }
+    
+    //for Multi-bank read configurations
+    //For EPC bank, read one full
+    if (![self E710MultibankWriteConfig:0 IsEnabled:TRUE Bank:bank Offset:offset Length:count forData:data]) {
+        NSLog(@"E710StartTagMemoryWrite failed. Failed to set mulit-bank write.  Error code: %d", errorCode);
+        connectStatus=CONNECTED;
+        [self.delegate didInterfaceChangeConnectStatus:self]; //this will call the method for connections status chagnes.
+        return false;
+    }
+    
+    result = [self E710SSCSLRFIDWriteMB];
+    
     connectStatus=CONNECTED;
     [self.delegate didInterfaceChangeConnectStatus:self]; //this will call the method for connections status chagnes.
     return result;

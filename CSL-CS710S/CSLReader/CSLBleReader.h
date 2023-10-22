@@ -598,6 +598,22 @@ Set inventory round control
                         Offset:(UInt32)offset
                          Length:(Byte)length;
 /**
+ Set mutlibank write configurations
+ @param set_number Yp to three sets
+ @param enable Eanble/disable
+ @param bank  Memory bank
+ @param offset Word offset pointer
+ @param length  Number of words to write
+ @param data data to be written
+ @return TRUE if the operation is successful
+ */
+- (BOOL)E710MultibankWriteConfig:(Byte)set_number
+                      IsEnabled:(BOOL)enable
+                           Bank:(Byte)bank
+                        Offset:(UInt32)offset
+                         Length:(Byte)length
+                         forData:(NSData*)data;
+/**
  Set duplicate eliminiation rolling window in seconds
  @param rollingWindowInSeconds Duplicate elimination rolling window in seconds.
  @return TRUE if the operation is successful

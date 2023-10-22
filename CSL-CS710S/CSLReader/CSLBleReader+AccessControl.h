@@ -192,6 +192,20 @@ Select EPC match mask
  */
 - (BOOL) startTagMemoryWrite:(MEMORYBANK)bank dataOffset:(UInt16)offset dataCount:(UInt16)count writeData:(NSData*)data ACCPWD:(UInt32)password maskBank:(MEMORYBANK)mask_bank maskPointer:(UInt16)mask_pointer maskLength:(UInt32)mask_Length maskData:(NSData*)mask_data;
 /**
+ Send singular tag write command
+ @param bank Bank to be write from
+ @param offset Pointer to the start of the memory address, by the number of words
+ @param count Number of words to be write
+ @param data Number of words to be written
+ @param password Access password for the tag
+ @param mask_bank Mask bank to be used for tag selection
+ @param mask_pointer Pointer to the start of the memory address, to be expressed by bits
+ @param mask_Length Size of the mask expressed in number of bits
+ @param mask_data mask value
+ @return TRUE if the operation is successful
+ */
+- (BOOL) E710StartTagMemoryWrite:(MEMORYBANK)bank dataOffset:(UInt16)offset dataCount:(UInt16)count writeData:(NSData*)data ACCPWD:(UInt32)password maskBank:(MEMORYBANK)mask_bank maskPointer:(UInt16)mask_pointer maskLength:(UInt32)mask_Length maskData:(NSData*)mask_data;
+/**
  Send singular tag security command
  @param lockCommandConfigBits 20 configuration bits for defining security status of a tag.  Mask defines which bank to execute the locking, action defines what type of lock or unlock commands to carry out. For details please reference EPC Air Interface document.
  @param password Access password for the tag
@@ -254,7 +268,11 @@ Select EPC match mask
  @return TRUE if the operation is successful
  */
 - (BOOL)E710SSCSLRFIDReadMB;
-
+/**
+ Short command for writing multi-bank data
+ @return TRUE if the operation is successful
+ */
+- (BOOL)E710SSCSLRFIDWriteMB;
 @end
 
 NS_ASSUME_NONNULL_END
