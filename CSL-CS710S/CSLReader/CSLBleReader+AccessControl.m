@@ -2001,6 +2001,41 @@
     
 }
 
+- (BOOL)E710SCSLRFIDLock {
+    
+    if (self.readerModelNumber != CS710) {
+        NSLog(@"RFID command failed. Invalid reader");
+        return false;
+    }
+    
+    if ([self E710SendShortOperationCommand:self CommandCode:0x10B7 timeOutInSeconds:1])
+    {
+        NSLog(@"RFID Lock: OK");
+        return true;
+        
+    }
+    NSLog(@"RFID Lock: FAILED");
+    return false;
+    
+}
+
+- (BOOL)E710SCSLRFIDKill {
+    
+    if (self.readerModelNumber != CS710) {
+        NSLog(@"RFID command failed. Invalid reader");
+        return false;
+    }
+    
+    if ([self E710SendShortOperationCommand:self CommandCode:0x10B8 timeOutInSeconds:1])
+    {
+        NSLog(@"RFID Kill: OK");
+        return true;
+        
+    }
+    NSLog(@"RFID Kill: FAILED");
+    return false;
+    
+}
 
 - (BOOL) startTagMemoryWrite:(MEMORYBANK)bank dataOffset:(UInt16)offset dataCount:(UInt16)count writeData:(NSData*)data ACCPWD:(UInt32)password maskBank:(MEMORYBANK)mask_bank maskPointer:(UInt16)mask_pointer maskLength:(UInt32)mask_Length maskData:(NSData*)mask_data {
     
@@ -2427,6 +2462,62 @@
     return result;
 }
 
+- (BOOL) E710StartTagMemoryLock:(UInt32)lockCommandConfigBits ACCPWD:(UInt32)password maskBank:(MEMORYBANK)mask_bank maskPointer:(UInt16)mask_pointer maskLength:(UInt32)mask_Length maskData:(NSData*)mask_data {
+    
+    BOOL result=true;
+    Byte errorCode;
+    NSData* regData;
+    
+    //if mask data is not nil, tag will be selected before reading
+    if (mask_data != nil)
+        [self E710SelectTag:0
+                   maskBank:mask_bank
+                maskPointer:mask_pointer
+                 maskLength:mask_Length
+                   maskData:mask_data
+                     target:4
+                     action:0
+            postConfigDelay:0];
+    
+    //set access password
+    regData = [[NSData alloc] initWithBytes:(unsigned char[]){ (password & 0xFF000000) >> 24, (password & 0x00FF0000 )>> 16, (password & 0x0000FF00) >> 8, password & 0x000000FF } length:4];
+    if (![self E710WriteRegister:self atAddr:0x38A6 regLength:4 forData:regData timeOutInSeconds:1 error:&errorCode])
+    {
+        NSLog(@"E710StartTagMemoryLock failed. Failed to set access password.  Error code: %d", errorCode);
+        connectStatus=CONNECTED;
+        [self.delegate didInterfaceChangeConnectStatus:self]; //this will call the method for connections status chagnes.
+        return false;
+    }
+    
+    //for setting mask and action bits
+    //mask bits
+    regData = [[NSData alloc] initWithBytes:(unsigned char[]){ (lockCommandConfigBits & 0xC0000) >> 18, (lockCommandConfigBits & 0x3FC00) >> 10 } length:2];
+    if (![self E710WriteRegister:self atAddr:0x38AE regLength:2 forData:regData timeOutInSeconds:1 error:&errorCode])
+    {
+        NSLog(@"E710StartTagMemoryLock failed. Failed to set lock mask.  Error code: %d", errorCode);
+        connectStatus=CONNECTED;
+        [self.delegate didInterfaceChangeConnectStatus:self]; //this will call the method for connections status chagnes.
+        return false;
+    }
+    
+    //action bits
+    regData = [[NSData alloc] initWithBytes:(unsigned char[]){ (lockCommandConfigBits & 0x300) >> 8, lockCommandConfigBits & 0xFF } length:2];
+    if (![self E710WriteRegister:self atAddr:0x38B0 regLength:2 forData:regData timeOutInSeconds:1 error:&errorCode])
+    {
+        NSLog(@"E710StartTagMemoryLock failed. Failed to set lock action.  Error code: %d", errorCode);
+        connectStatus=CONNECTED;
+        [self.delegate didInterfaceChangeConnectStatus:self]; //this will call the method for connections status chagnes.
+        return false;
+    }
+    
+    result = [self E710SCSLRFIDLock];
+    
+    connectStatus=CONNECTED;
+    [self.delegate didInterfaceChangeConnectStatus:self]; //this will call the method for connections status chagnes.
+    return result;
+    
+}
+
 - (BOOL) startTagMemoryKill:(UInt32)password maskBank:(MEMORYBANK)mask_bank maskPointer:(UInt16)mask_pointer maskLength:(UInt32)mask_Length maskData:(NSData*)mask_data{
     
     BOOL result=true;
@@ -2489,6 +2580,40 @@
         [self.delegate didInterfaceChangeConnectStatus:self]; //this will call the method for connections status chagnes.
         return FALSE;
     }
+    connectStatus=CONNECTED;
+    [self.delegate didInterfaceChangeConnectStatus:self]; //this will call the method for connections status chagnes.
+    return result;
+}
+
+- (BOOL) E710StartTagMemoryKill:(UInt32)password maskBank:(MEMORYBANK)mask_bank maskPointer:(UInt16)mask_pointer maskLength:(UInt32)mask_Length maskData:(NSData*)mask_data{
+    
+    BOOL result=true;
+    Byte errorCode;
+    NSData* regData;
+    
+    //if mask data is not nil, tag will be selected before reading
+    if (mask_data != nil)
+        [self E710SelectTag:0
+                   maskBank:mask_bank
+                maskPointer:mask_pointer
+                 maskLength:mask_Length
+                   maskData:mask_data
+                     target:4
+                     action:0
+            postConfigDelay:0];
+    
+    //set kill password
+    regData = [[NSData alloc] initWithBytes:(unsigned char[]){ (password & 0xFF000000) >> 24, (password & 0x00FF0000 )>> 16, (password & 0x0000FF00) >> 8, password & 0x000000FF } length:4];
+    if (![self E710WriteRegister:self atAddr:0x38AA regLength:4 forData:regData timeOutInSeconds:1 error:&errorCode])
+    {
+        NSLog(@"E710StartTagMemoryKill failed. Failed to set kill password.  Error code: %d", errorCode);
+        connectStatus=CONNECTED;
+        [self.delegate didInterfaceChangeConnectStatus:self]; //this will call the method for connections status chagnes.
+        return false;
+    }
+        
+    result = [self E710SCSLRFIDKill];
+    
     connectStatus=CONNECTED;
     [self.delegate didInterfaceChangeConnectStatus:self]; //this will call the method for connections status chagnes.
     return result;

@@ -217,6 +217,17 @@ Select EPC match mask
  */
 - (BOOL) startTagMemoryLock:(UInt32)lockCommandConfigBits ACCPWD:(UInt32)password maskBank:(MEMORYBANK)mask_bank maskPointer:(UInt16)mask_pointer maskLength:(UInt32)mask_Length maskData:(NSData*)mask_data;
 /**
+ Send singular tag security command
+ @param lockCommandConfigBits 20 configuration bits for defining security status of a tag.  Mask defines which bank to execute the locking, action defines what type of lock or unlock commands to carry out. For details please reference EPC Air Interface document.
+ @param password Access password for the tag
+ @param mask_bank Mask bank to be used for tag selection
+ @param mask_pointer Pointer to the start of the memory address, to be expressed by bits
+ @param mask_Length Size of the mask expressed in number of bits
+ @param mask_data mask value
+ @return TRUE if the operation is successful
+ */
+- (BOOL) E710StartTagMemoryLock:(UInt32)lockCommandConfigBits ACCPWD:(UInt32)password maskBank:(MEMORYBANK)mask_bank maskPointer:(UInt16)mask_pointer maskLength:(UInt32)mask_Length maskData:(NSData*)mask_data;
+/**
  Send singular tag kill command
  @param password Access password for the tag
  @param mask_bank Mask bank to be used for tag selection
@@ -226,6 +237,16 @@ Select EPC match mask
  @return TRUE if the operation is successful
  */
 - (BOOL) startTagMemoryKill:(UInt32)password maskBank:(MEMORYBANK)mask_bank maskPointer:(UInt16)mask_pointer maskLength:(UInt32)mask_Length maskData:(NSData*)mask_data;
+/**
+ Send singular tag kill command
+ @param password Access password for the tag
+ @param mask_bank Mask bank to be used for tag selection
+ @param mask_pointer Pointer to the start of the memory address, to be expressed by bits
+ @param mask_Length Size of the mask expressed in number of bits
+ @param mask_data mask value
+ @return TRUE if the operation is successful
+ */
+- (BOOL) E710StartTagMemoryKill:(UInt32)password maskBank:(MEMORYBANK)mask_bank maskPointer:(UInt16)mask_pointer maskLength:(UInt32)mask_Length maskData:(NSData*)mask_data;
 /**
  Send singular tag search command
  @param mask_bank Mask bank to be used for tag selection
@@ -273,6 +294,16 @@ Select EPC match mask
  @return TRUE if the operation is successful
  */
 - (BOOL)E710SSCSLRFIDWriteMB;
+/**
+ Short command for tag lock
+ @return TRUE if the operation is successful
+ */
+- (BOOL)E710SCSLRFIDLock;
+/**
+ Short command for tag kill
+ @return TRUE if the operation is successful
+ */
+- (BOOL)E710SCSLRFIDKill;
 @end
 
 NS_ASSUME_NONNULL_END
