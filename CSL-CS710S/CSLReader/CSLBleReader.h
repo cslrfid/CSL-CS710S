@@ -575,9 +575,9 @@ Set inventory round control
                       FixedQMode:(BOOL)fixed_q_mode
                QIncreaseUseQuery:(BOOL)q_inc_use_query
                QDecreaseUseQuery:(BOOL)q_dec_use_query
-                         Session:(Byte)session
-               SelInQueryCommand:(Byte)sel_query_command
-                     QueryTarget:(BOOL)query_target
+                         Session:(SESSION)session
+               SelInQueryCommand:(QUERYSELECT)sel_query_command
+                     QueryTarget:(TARGET)query_target
                    HaltOnAllTags:(BOOL)halt_on_all_tags
                     FastIdEnable:(BOOL)fast_id_enable
                   TagFocusEnable:(BOOL)tag_focus_enable
@@ -647,6 +647,11 @@ Set inventory round control
  @return TRUE if the operation is successful
  */
 - (BOOL)E710StartMBInventory;
+/**
+ Start select multibank inventory
+ @return TRUE if the operation is successful
+ */
+- (BOOL)E710StartSelectMBInventory;
 /**
  Stop Inventory
  @return TRUE if the operation is successful

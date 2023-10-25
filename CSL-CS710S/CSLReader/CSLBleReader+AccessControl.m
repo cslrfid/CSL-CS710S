@@ -2037,6 +2037,24 @@
     
 }
 
+- (BOOL)E710SCSLRFIDStartSelectInventory{
+    
+    if (self.readerModelNumber != CS710) {
+        NSLog(@"RFID command failed. Invalid reader");
+        return false;
+    }
+    
+    if ([self E710SendShortOperationCommand:self CommandCode:0x10A3 timeOutInSeconds:1])
+    {
+        NSLog(@"RFID Tag Search: OK");
+        return true;
+        
+    }
+    NSLog(@"RFID Tag Search: FAILED");
+    return false;
+    
+}
+
 - (BOOL) startTagMemoryWrite:(MEMORYBANK)bank dataOffset:(UInt16)offset dataCount:(UInt16)count writeData:(NSData*)data ACCPWD:(UInt32)password maskBank:(MEMORYBANK)mask_bank maskPointer:(UInt16)mask_pointer maskLength:(UInt32)mask_Length maskData:(NSData*)mask_data {
     
     int ptr, ptr2;  //tag write buffer pointer
@@ -2227,81 +2245,103 @@
 
 - (BOOL) startTagSearch:(MEMORYBANK)mask_bank maskPointer:(UInt16)mask_pointer maskLength:(UInt32)mask_Length maskData:(NSData*)mask_data {
     
-    BOOL result=true;
-    CSLBlePacket *recvPacket;
-    
-    result=[self setParametersForTagSearch];
-    self.isTagAccessMode=true;
-    
-    //if mask data is not nil, tag will be selected before reading
-    if (mask_data != nil)
-        result=[self selectTagForSearch:mask_bank maskPointer:32 maskLength:mask_Length  maskData:mask_data];
-    
-    result = [self sendHostCommandSearch];
-    
-    //wait for the command-begin and command-end packet
-    for (int i=0;i<COMMAND_TIMEOUT_5S;i++) { //receive data or time out in 5 seconds
-        if ([self.cmdRespQueue count] >= 1)
-            break;
-        [NSThread sleepForTimeInterval:0.001f];
+    if (self.readerModelNumber != CS710) {
+        BOOL result=true;
+        CSLBlePacket *recvPacket;
+        
+        result=[self setParametersForTagSearch];
+        self.isTagAccessMode=true;
+        
+        //if mask data is not nil, tag will be selected before reading
+        if (mask_data != nil)
+            result=[self selectTagForSearch:mask_bank maskPointer:32 maskLength:mask_Length  maskData:mask_data];
+        
+        result = [self sendHostCommandSearch];
+        
+        //wait for the command-begin and command-end packet
+        for (int i=0;i<COMMAND_TIMEOUT_5S;i++) { //receive data or time out in 5 seconds
+            if ([self.cmdRespQueue count] >= 1)
+                break;
+            [NSThread sleepForTimeInterval:0.001f];
+        }
+        
+        if ([self.cmdRespQueue count] < 1) {
+            NSLog(@"Tag search command timed out.");
+            connectStatus=CONNECTED;
+            [self.delegate didInterfaceChangeConnectStatus:self]; //this will call the method for connections status chagnes.
+            return false;
+        }
+        
+        //command-begin
+        recvPacket = ((CSLBlePacket *)[self.cmdRespQueue deqObject]);
+        if (([[recvPacket.getPacketPayloadInHexString substringWithRange:NSMakeRange(4, 2)] isEqualToString:@"02"] &&
+             [[recvPacket.getPacketPayloadInHexString substringWithRange:NSMakeRange(8, 4)] isEqualToString:@"0080"]) ||
+            ([[recvPacket.getPacketPayloadInHexString substringWithRange:NSMakeRange(4, 2)] isEqualToString:@"01"] &&
+             [[recvPacket.getPacketPayloadInHexString substringWithRange:NSMakeRange(8, 4)] isEqualToString:@"0000"])
+            ) {
+            self.lastMacErrorCode=0x0000;
+            NSLog(@"Receive search command-begin response: OK");
+        }
+        else
+        {
+            NSLog(@"Receive search command-begin response: FAILED");
+            connectStatus=CONNECTED;
+            [self.delegate didInterfaceChangeConnectStatus:self]; //this will call the method for connections status chagnes.
+            return FALSE;
+        }
+        connectStatus=TAG_OPERATIONS;
+        //[self performSelectorInBackground:@selector(decodePacketsInBufferAsync) withObject:(nil)];
+        return true;
     }
-    
-    if ([self.cmdRespQueue count] < 1) {
-        NSLog(@"Tag search command timed out.");
+    else {
+        BOOL result=true;
+        Byte errorCode;
+        NSData* regData;
+        
+        //if mask data is not nil, tag will be selected before reading
+        if (mask_data != nil)
+            [self E710SelectTag:0
+                       maskBank:mask_bank
+                    maskPointer:mask_pointer
+                     maskLength:mask_Length
+                       maskData:mask_data
+                         target:4
+                         action:0
+                postConfigDelay:0];
+        
+//        regData = [[NSData alloc] initWithBytes:(unsigned char[]){ 0x66 } length:1];
+//        if (![self E710WriteRegister:self atAddr:0x3036 regLength:1 forData:regData timeOutInSeconds:1 error:&errorCode])
+//        {
+//            NSLog(@"RFID startTagSearch failed. Error code: %d", errorCode);
+//            return false;
+//        }
+//
+//        regData = [[NSData alloc] initWithBytes:(unsigned char[]){ 0x01 } length:1];
+//        if (![self E710WriteRegister:self atAddr:0x303D regLength:1 forData:regData timeOutInSeconds:1 error:&errorCode])
+//        {
+//            NSLog(@"RFID startTagSearch failed. Error code: %d", errorCode);
+//            return false;
+//        }
+//        
+//        regData = [[NSData alloc] initWithBytes:(unsigned char[]){ 0x67 } length:1];
+//        if (![self E710WriteRegister:self atAddr:0x3036 regLength:1 forData:regData timeOutInSeconds:1 error:&errorCode])
+//        {
+//            NSLog(@"RFID startTagSearch failed. Error code: %d", errorCode);
+//            return false;
+//        }
+        
+        result = [self E710SCSLRFIDStartSelectInventory];
+        
         connectStatus=CONNECTED;
         [self.delegate didInterfaceChangeConnectStatus:self]; //this will call the method for connections status chagnes.
-        return false;
+        return result;
     }
-    
-    //command-begin
-    recvPacket = ((CSLBlePacket *)[self.cmdRespQueue deqObject]);
-    if (([[recvPacket.getPacketPayloadInHexString substringWithRange:NSMakeRange(4, 2)] isEqualToString:@"02"] &&
-         [[recvPacket.getPacketPayloadInHexString substringWithRange:NSMakeRange(8, 4)] isEqualToString:@"0080"]) ||
-        ([[recvPacket.getPacketPayloadInHexString substringWithRange:NSMakeRange(4, 2)] isEqualToString:@"01"] &&
-         [[recvPacket.getPacketPayloadInHexString substringWithRange:NSMakeRange(8, 4)] isEqualToString:@"0000"])
-        ) {
-        self.lastMacErrorCode=0x0000;
-        NSLog(@"Receive search command-begin response: OK");
-    }
-    else
-    {
-        NSLog(@"Receive search command-begin response: FAILED");
-        connectStatus=CONNECTED;
-        [self.delegate didInterfaceChangeConnectStatus:self]; //this will call the method for connections status chagnes.
-        return FALSE;
-    }
-    connectStatus=TAG_OPERATIONS;
-    //[self performSelectorInBackground:@selector(decodePacketsInBufferAsync) withObject:(nil)];
-    return true;
 }
 
 - (BOOL)stopTagSearch {
     
-    //retry multiple times in case rfid module is busy on receiving the abort command
-    for (int j=0;j<3;j++)
-    {
-        [self performSelectorInBackground:@selector(stopTagSearchBlocking) withObject:(nil)];
-        
-        for (int i=0;i<COMMAND_TIMEOUT_5S;i++) {  //receive data or time out in 3 seconds
-            ([[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.001]]);
-            if(connectStatus == CONNECTED)
-                break;
-        }
-        if (connectStatus != CONNECTED)
-        {
-            NSLog(@"Abort command response failure.  Try #%d", j+1);
-            continue;
-        }
-        else
-        {
-            NSLog(@"Abort command response: OK");
-            break;
-        }
-        
-    }
-    
-    return ((connectStatus != CONNECTED) ? false : true);
-    
+    return [self stopInventory];
+
 }
 
 - (void)stopTagSearchBlocking {
