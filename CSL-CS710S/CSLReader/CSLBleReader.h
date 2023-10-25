@@ -467,10 +467,12 @@ FrequencyChannel:(Byte)fChannel
 Set antenna configuration (enable/disable)
 @param port_number antenna port to be configured
 @param isEnable Enable/disable antenna port
+@param toggle  Target Toggle (0 = No, 1 = Yes)
 @return TRUE if the operation is successful
 */
 - (BOOL)E710SetAntennaConfig:(Byte)port_number
-              PortEnable:(BOOL)isEnable;
+                  PortEnable:(BOOL)isEnable
+                TargetToggle:(BOOL)toggle;
 /**
 Set antenna inventory count
 @param count Number of inventory rounds for current port
@@ -573,9 +575,9 @@ Set inventory round control
                       FixedQMode:(BOOL)fixed_q_mode
                QIncreaseUseQuery:(BOOL)q_inc_use_query
                QDecreaseUseQuery:(BOOL)q_dec_use_query
-                         Session:(Byte)session
-               SelInQueryCommand:(Byte)sel_query_command
-                     QueryTarget:(BOOL)query_target
+                         Session:(SESSION)session
+               SelInQueryCommand:(QUERYSELECT)sel_query_command
+                     QueryTarget:(TARGET)query_target
                    HaltOnAllTags:(BOOL)halt_on_all_tags
                     FastIdEnable:(BOOL)fast_id_enable
                   TagFocusEnable:(BOOL)tag_focus_enable
@@ -595,6 +597,22 @@ Set inventory round control
                            Bank:(Byte)bank
                         Offset:(UInt32)offset
                          Length:(Byte)length;
+/**
+ Set mutlibank write configurations
+ @param set_number Yp to three sets
+ @param enable Eanble/disable
+ @param bank  Memory bank
+ @param offset Word offset pointer
+ @param length  Number of words to write
+ @param data data to be written
+ @return TRUE if the operation is successful
+ */
+- (BOOL)E710MultibankWriteConfig:(Byte)set_number
+                      IsEnabled:(BOOL)enable
+                           Bank:(Byte)bank
+                        Offset:(UInt32)offset
+                         Length:(Byte)length
+                         forData:(NSData*)data;
 /**
  Set duplicate eliminiation rolling window in seconds
  @param rollingWindowInSeconds Duplicate elimination rolling window in seconds.
@@ -629,6 +647,11 @@ Set inventory round control
  @return TRUE if the operation is successful
  */
 - (BOOL)E710StartMBInventory;
+/**
+ Start select multibank inventory
+ @return TRUE if the operation is successful
+ */
+- (BOOL)E710StartSelectMBInventory;
 /**
  Stop Inventory
  @return TRUE if the operation is successful

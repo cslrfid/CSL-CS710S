@@ -14,6 +14,7 @@
     Byte SequenceNumber;
     int multibank1Length;
     int multibank2Length;
+    CSLBleTag* killTagResponse;
 }
 - (void) stopInventoryBlocking;
 
@@ -2249,7 +2250,7 @@
     {
         Byte errorCode;
         unsigned short startAddress = 0x3033 + (16 * port_number);
-        NSData* regData = [[NSData alloc] initWithBytes:(unsigned char[]){((powerInDbm * 10) & 0xFF00) >> 8, (powerInDbm * 10) & 0xFF}
+        NSData* regData = [[NSData alloc] initWithBytes:(unsigned char[]){((powerInDbm * 100) & 0xFF00) >> 8, (powerInDbm * 100) & 0xFF}
                                                  length:2];
         if (![self E710WriteRegister:self atAddr:startAddress regLength:2 forData:regData timeOutInSeconds:1 error:&errorCode])
         {
@@ -2353,9 +2354,9 @@
                       FixedQMode:(BOOL)fixed_q_mode
                QIncreaseUseQuery:(BOOL)q_inc_use_query
                QDecreaseUseQuery:(BOOL)q_dec_use_query
-                         Session:(Byte)session
-               SelInQueryCommand:(Byte)sel_query_command
-                     QueryTarget:(BOOL)query_target
+                         Session:(SESSION)session
+               SelInQueryCommand:(QUERYSELECT)sel_query_command
+                     QueryTarget:(TARGET)query_target
                    HaltOnAllTags:(BOOL)halt_on_all_tags
                     FastIdEnable:(BOOL)fast_id_enable
                   TagFocusEnable:(BOOL)tag_focus_enable
@@ -2422,6 +2423,44 @@
     return true;
     
 }
+
+- (BOOL)E710MultibankWriteConfig:(Byte)set_number
+                      IsEnabled:(BOOL)enable
+                           Bank:(Byte)bank
+                        Offset:(UInt32)offset
+                         Length:(Byte)length
+                         forData:(NSData*)data {
+    
+    if (self.readerModelNumber != CS710) {
+        NSLog(@"RFID command failed. Invalid reader");
+        return false;
+    }
+    
+    Byte errorCode;
+    unsigned short startAddress = 0x3290 + set_number * 519;
+    NSData* regData = [[NSData alloc] initWithBytes:(unsigned char[]){ enable ? 1 : 0, bank, (offset & 0xFF000000) >> 24, (offset & 0x00FF0000) >> 16, (offset & 0x0000FF00) >> 8, (offset & 0xFF), length }
+                                             length:7];
+    
+    //write first 7 bytes of configurations
+    if (![self E710WriteRegister:self atAddr:startAddress regLength:7 forData:regData timeOutInSeconds:1 error:&errorCode])
+    {
+        NSLog(@"RFID set multibank write config failed. Error code: %d", errorCode);
+        return false;
+    }
+    
+    //write actual data to be written
+    if (![self E710WriteRegister:self atAddr:startAddress+7 regLength:[data length] forData:data timeOutInSeconds:2 error:&errorCode])
+    {
+        NSLog(@"RFID set multibank write content. Error code: %d", errorCode);
+        return false;
+    }
+    
+    NSLog(@"RFID set multibank write config sent: OK");
+    
+    return true;
+    
+}
+
 - (BOOL)E710SetDuplicateEliminationRollingWindow:(Byte)rollingWindowInSeconds {
 
     if (self.readerModelNumber != CS710) {
@@ -2717,7 +2756,8 @@
 }
 
 - (BOOL)E710SetAntennaConfig:(Byte)port_number
-              PortEnable:(BOOL)isEnable {
+                  PortEnable:(BOOL)isEnable
+                TargetToggle:(BOOL)toggle {
     
     if (self.readerModelNumber != CS710) {
         NSLog(@"RFID command failed. Invalid reader");
@@ -2733,6 +2773,14 @@
         NSLog(@"Write register failed. Error code: %d", errorCode);
         return false;
     }
+    
+    regData = [[NSData alloc] initWithBytes:(unsigned char[]){ toggle ? 1 : 0 } length:1];
+    if (![self E710WriteRegister:self atAddr:startAddress+13 regLength:1 forData:regData timeOutInSeconds:1 error:&errorCode])
+    {
+        NSLog(@"Write register failed. Error code: %d", errorCode);
+        return false;
+    }
+    
     NSLog(@"RFID antennoa config command (port %d) sent: OK", port_number);
     return true;
     
@@ -3638,6 +3686,25 @@
 
     }
     NSLog(@"Start mulit-bank inventory: FAILED");
+    return false;
+    
+}
+
+- (BOOL)E710StartSelectMBInventory {
+
+    if (self.readerModelNumber != CS710) {
+        NSLog(@"RFID command failed. Invalid reader");
+        return false;
+    }
+    
+    if ([self E710SendShortOperationCommand:self CommandCode:0x10A5 timeOutInSeconds:1])
+    {
+        NSLog(@"Start select mulit-bank inventory: OK");
+        connectStatus=TAG_OPERATIONS;
+        return true;
+
+    }
+    NSLog(@"Start select mulit-bank inventory: FAILED");
     return false;
     
 }
@@ -4794,6 +4861,7 @@
     
     int datalen;        //data length given on the RFID packet
     int mulitbankPacketLen;
+    int epcOnlyPacketLen;
     int sequenceNumber=0;
     
     while (self.bleDevice)  //packet decoding will continue as long as there is a connected device instance
@@ -4918,10 +4986,76 @@
                         continue;
                     }
                     
-                    //Opeation command - SCSLRFIDStartCompactInventory
+                    //Opeation command - SCSLRFIDStartMBInventory
                     if ([[rfidPacketBufferInHexString substringWithRange:NSMakeRange(4, 4)] isEqualToString:@"51E2"] &&
                         [[rfidPacketBufferInHexString substringWithRange:NSMakeRange(8, 4)] isEqualToString:@"10A4"]) {
                         NSLog(@"[decodePacketsInBufferAsync] SCSLRFIDStartMBInventory command response (10A4) recieved: %@", rfidPacketBufferInHexString);
+                        self.lastMacErrorCode=0x0000;
+                        //return packet directly to the API for decoding
+                        [cmdRespQueue enqObject:packet];
+                        [rfidPacketBuffer setLength:0];
+                        continue;
+                    }
+                    
+                    //Opeation command - SCSLRFIDStartSelectMBInventory
+                    if ([[rfidPacketBufferInHexString substringWithRange:NSMakeRange(4, 4)] isEqualToString:@"51E2"] &&
+                        [[rfidPacketBufferInHexString substringWithRange:NSMakeRange(8, 4)] isEqualToString:@"10A5"]) {
+                        NSLog(@"[decodePacketsInBufferAsync] SCSLRFIDStartSelectMBInventory command response (10A5) recieved: %@", rfidPacketBufferInHexString);
+                        self.lastMacErrorCode=0x0000;
+                        //return packet directly to the API for decoding
+                        [cmdRespQueue enqObject:packet];
+                        [rfidPacketBuffer setLength:0];
+                        continue;
+                    }
+                    
+                    //Opeation command - SCSLRFIDReadMB
+                    if ([[rfidPacketBufferInHexString substringWithRange:NSMakeRange(4, 4)] isEqualToString:@"51E2"] &&
+                        [[rfidPacketBufferInHexString substringWithRange:NSMakeRange(8, 4)] isEqualToString:@"10B1"]) {
+                        NSLog(@"[decodePacketsInBufferAsync] SCSLRFIDReadMB command response (10B1) recieved: %@", rfidPacketBufferInHexString);
+                        self.lastMacErrorCode=0x0000;
+                        //return packet directly to the API for decoding
+                        [cmdRespQueue enqObject:packet];
+                        [rfidPacketBuffer setLength:0];
+                        continue;
+                    }
+                    
+                    //Opeation command - SCSLRFIDWriteMB
+                    if ([[rfidPacketBufferInHexString substringWithRange:NSMakeRange(4, 4)] isEqualToString:@"51E2"] &&
+                        [[rfidPacketBufferInHexString substringWithRange:NSMakeRange(8, 4)] isEqualToString:@"10B2"]) {
+                        NSLog(@"[decodePacketsInBufferAsync] SCSLRFIDWriteMB command response (10B2) recieved: %@", rfidPacketBufferInHexString);
+                        self.lastMacErrorCode=0x0000;
+                        //return packet directly to the API for decoding
+                        [cmdRespQueue enqObject:packet];
+                        [rfidPacketBuffer setLength:0];
+                        continue;
+                    }
+                    
+                    //Opeation command - SCSLRFIDLock
+                    if ([[rfidPacketBufferInHexString substringWithRange:NSMakeRange(4, 4)] isEqualToString:@"51E2"] &&
+                        [[rfidPacketBufferInHexString substringWithRange:NSMakeRange(8, 4)] isEqualToString:@"10B7"]) {
+                        NSLog(@"[decodePacketsInBufferAsync] SCSLRFIDLock command response (10B7) recieved: %@", rfidPacketBufferInHexString);
+                        self.lastMacErrorCode=0x0000;
+                        //return packet directly to the API for decoding
+                        [cmdRespQueue enqObject:packet];
+                        [rfidPacketBuffer setLength:0];
+                        continue;
+                    }
+                    
+                    //Opeation command - SCSLRFIDKill
+                    if ([[rfidPacketBufferInHexString substringWithRange:NSMakeRange(4, 4)] isEqualToString:@"51E2"] &&
+                        [[rfidPacketBufferInHexString substringWithRange:NSMakeRange(8, 4)] isEqualToString:@"10B8"]) {
+                        NSLog(@"[decodePacketsInBufferAsync] SCSLRFIDKill command response (10B8) recieved: %@", rfidPacketBufferInHexString);
+                        self.lastMacErrorCode=0x0000;
+                        //return packet directly to the API for decoding
+                        [cmdRespQueue enqObject:packet];
+                        [rfidPacketBuffer setLength:0];
+                        continue;
+                    }
+                    
+                    //Opeation command - SCSLRFIDStartSelectInventory
+                    if ([[rfidPacketBufferInHexString substringWithRange:NSMakeRange(4, 4)] isEqualToString:@"51E2"] &&
+                        [[rfidPacketBufferInHexString substringWithRange:NSMakeRange(8, 4)] isEqualToString:@"10A3"]) {
+                        NSLog(@"[decodePacketsInBufferAsync] SCSLRFIDStartSelectInventory command response (10A3) recieved: %@", rfidPacketBufferInHexString);
                         self.lastMacErrorCode=0x0000;
                         //return packet directly to the API for decoding
                         [cmdRespQueue enqObject:packet];
@@ -4934,6 +5068,21 @@
                         [[rfidPacketBufferInHexString substringWithRange:NSMakeRange(8, 4)] isEqualToString:@"3008"] &&
                         ((datalen + 9) * 2) == [rfidPacketBufferInHexString length]) {
                         NSLog(@"[decodePacketsInBufferAsync] CSL RFID uplink packet (csl_operation_complete) recieved: %@", rfidPacketBufferInHexString);
+                        
+                        //only return tag response after tag killing
+                        if (killTagResponse == NULL && [[rfidPacketBufferInHexString substringWithRange:NSMakeRange(26, 4)] isEqualToString:@"10B8"]) {
+                            killTagResponse=[[CSLBleTag alloc] init];
+                            killTagResponse.AccessCommand=KILL;
+                            killTagResponse.AccessError = 0x10;
+                            killTagResponse.BackScatterError = 0x00;
+                            killTagResponse.timestamp = [NSDate date];
+                            
+                            [self.readerDelegate didReceiveTagAccessData:self tagReceived:killTagResponse]; //this will call the method for handling the tag response.
+                        }
+                        else {
+                            [self.readerDelegate didReceiveTagAccessData:self tagReceived:killTagResponse]; //this will call the method for handling the tag response.
+                        }
+                        
                         self.lastMacErrorCode=0x0000;
                         //return packet directly to the API for decoding
                         [cmdRespQueue enqObject:packet];
@@ -4963,15 +5112,127 @@
                         continue;
                     }
                     
-                    //Uplink packet 3006  (csl_tag_read_epc_only_new) return PC+EPC during tag access
+                    //Uplink packet 3001 (csl_tag_read_epc_only_new)
                     if ([[rfidPacketBufferInHexString substringWithRange:NSMakeRange(4, 4)] isEqualToString:@"49DC"] &&
                         [[rfidPacketBufferInHexString substringWithRange:NSMakeRange(8, 4)] isEqualToString:@"3001"] &&
-                        ((datalen + 9) * 2) == [rfidPacketBufferInHexString length]) {
-                        //TODO:
+                        [rfidPacketBuffer length] > 9) {
+                        
+                        //iterate through all the tag data
+                        int ptr=2;     //starting point of the tag data (skipping prefix 0x8100)
+                        
+                        //stop parsing if the remaining tag data is shorter than the minimum length of a packet
+                        while([rfidPacketBuffer length] > ptr + 7)
+                        {
+                            //stop parsing if no more csl_tag_read_multibank_new packet
+                            if (![[rfidPacketBufferInHexString substringWithRange:NSMakeRange(ptr * 2, 4)] isEqualToString:@"49DC"] ||
+                                ![[rfidPacketBufferInHexString substringWithRange:NSMakeRange((ptr + 2) * 2, 4)] isEqualToString:@"3001"] ) {
+                                [rfidPacketBuffer setLength:0];
+                                break;
+                            }
+                            
+                            epcOnlyPacketLen=((Byte *)[rfidPacketBuffer bytes])[ptr+6] + (((((Byte *)[rfidPacketBuffer bytes])[ptr+5] << 8) & 0xFF00));
+                            
+                            CSLBleTag* tag=[[CSLBleTag alloc] init];
+                            
+                            tag.PC =((((Byte *)[rfidPacketBuffer bytes])[ptr+22] << 8) & 0xFF00)+ ((Byte *)[rfidPacketBuffer bytes])[ptr+23];
+                            int rssiPtr = (2 + 7 + 4);  //uplink packet header +0x3003 packet offset
+                            Byte hb = (Byte)((Byte *)[rfidPacketBuffer bytes])[rssiPtr];
+                            Byte lb = (Byte)((Byte *)[rfidPacketBuffer bytes])[rssiPtr+1];
+                            tag.rssi = (Byte)[CSLBleReader E710DecodeRSSI:hb lowByte:lb];
+
+                            //for the case where we reaches to the end of the BLE packet but not the RFID response packet, where there will be partial packet to be returned from the next packet.  The partial tag data will be combined with the next packet being returned.
+                            //8100 (two bytes) + 8 bytes RFID packet header + payload length being calcuated ont he header
+                            if ([rfidPacketBuffer length] < (ptr + 7 + epcOnlyPacketLen)) {
+                                //stop decoding and wait for the partial tag data to be appended in the next packet arrival
+                                NSLog(@"[decodePacketsInBufferAsync] partial tag data being returned.  Wait for next rfid response packet for complete tag data.");
+                                break;
+                            }
+                            
+                            int EPCLengthInBytes = (tag.PC >> 11) * 2;
+                            tag.EPC=[rfidPacketBufferInHexString substringWithRange:NSMakeRange(((ptr+22)*2)+4, EPCLengthInBytes * 2)];
+                            tag.portNumber = ((Byte *)[rfidPacketBuffer bytes])[17];
+                            tag.timestamp=[NSDate date];
+                            ptr+= (7 + epcOnlyPacketLen);
+                            
+                            [self.readerDelegate didReceiveTagResponsePacket:self tagReceived:tag]; //this will call the method for handling the tag response.
+                            
+                            NSLog(@"[decodePacketsInBufferAsync] Tag data (epc only) found: PC=%04X EPC=%@ rssi=%d", tag.PC, tag.EPC, tag.rssi);
+                        }
+                        
+                        NSLog(@"[decodePacketsInBufferAsync] Finished decode all tags in packet.");
+                        [rfidPacketBuffer setLength:0];
+                    }
+                    
+//                    //Uplink packet 3006  (csl_tag_read_epc_only_new) return PC+EPC during tag access
+//                    if ([[rfidPacketBufferInHexString substringWithRange:NSMakeRange(4, 4)] isEqualToString:@"49DC"] &&
+//                        [[rfidPacketBufferInHexString substringWithRange:NSMakeRange(8, 4)] isEqualToString:@"3001"] &&
+//                        ((datalen + 9) * 2) == [rfidPacketBufferInHexString length]) {
+//
+//                        //for tag killing, clear out last saved tag
+//                        killTagResponse = NULL;
+//
+//                        CSLBleTag* tag=[[CSLBleTag alloc] init];
+//
+//                        Byte hb = (Byte)((Byte *)[rfidPacketBuffer bytes])[13];
+//                        Byte lb = (Byte)((Byte *)[rfidPacketBuffer bytes])[14];
+//                        tag.rssi = (Byte)[CSLBleReader E710DecodeRSSI:hb lowByte:lb];
+//                        tag.PC =((((Byte *)[rfidPacketBuffer bytes])[24] << 8) & 0xFF00)+ ((Byte *)[rfidPacketBuffer bytes])[25];
+//                        tag.portNumber=(int)((Byte *)[rfidPacketBuffer bytes])[19] - 1;
+//                        tag.EPC=[rfidPacketBufferInHexString substringWithRange:NSMakeRange(26*2, ((tag.PC >> 11) * 2) * 2)];
+//                        tag.timestamp = [NSDate date];
+//
+//                        NSLog(@"[decodePacketsInBufferAsync] Tag data (csl_tag_read_epc_only_new) found: PC=%04X EPC=%@ rssi=%d", tag.PC, tag.EPC, tag.rssi);
+//                        [rfidPacketBuffer setLength:0];
+//                        continue;
+//                    }
+//
+                    //Uplink packet 3009  (csl_access_complete) return data of memory bank
+                    if ([[rfidPacketBufferInHexString substringWithRange:NSMakeRange(4, 4)] isEqualToString:@"49DC"] &&
+                        [[rfidPacketBufferInHexString substringWithRange:NSMakeRange(8, 4)] isEqualToString:@"3009"] &&
+                        ((datalen + 9) * 2) == [rfidPacketBufferInHexString length] &&
+                        [rfidPacketBufferInHexString length] >= (21 * 2)) { /* 9 byte header + 12 byte 3009 message header */
+                        
+                        CSLBleTag* tag=[[CSLBleTag alloc] init];
+                        
+                        switch (((Byte *)[rfidPacketBuffer bytes])[14])
+                        {
+                            case 0xC2:
+                                tag.AccessCommand = READ;
+                                break;
+                            case 0xC3:
+                                tag.AccessCommand = WRITE;
+                                break;
+                            case 0xC4:
+                                tag.AccessCommand = KILL;
+                                break;
+                            case 0xC5:
+                                tag.AccessCommand = LOCK;
+                                break;
+                            case 0xD5:
+                                tag.AccessCommand = EAS;
+                                break;
+                        }
+                        tag.AccessError = ((Byte *)[rfidPacketBuffer bytes])[15];
+                        tag.BackScatterError = ((Byte *)[rfidPacketBuffer bytes])[16];
+                        if (tag.AccessCommand == WRITE)
+                            tag.DATALength = ((Byte *)[rfidPacketBuffer bytes])[18];
+                        else
+                            tag.DATALength = (datalen - 12) / 2; //length in number of words
+                        if (datalen > 12)   //if there is actual data after the header bytes
+                            tag.DATA = [rfidPacketBufferInHexString substringWithRange:NSMakeRange(21*2, tag.DATALength * 4)];
+                        tag.timestamp = [NSDate date];
+                        
+                        if (tag.AccessCommand == KILL) {
+                            killTagResponse = tag;
+                        }
+                        else {
+                            [self.readerDelegate didReceiveTagAccessData:self tagReceived:tag]; //this will call the method for handling the tag response.
+                        }
+                        
+                        NSLog(@"[decodePacketsInBufferAsync] Tag data (csl_access_complete): DATA=%@ MAC error=%02X tag error=%02X", tag.DATA, tag.BackScatterError, tag.AccessError);
                         [rfidPacketBuffer setLength:0];
                         continue;
                     }
-                    
                     
                     //Uplink packet 3006 (csl_tag_read_compact)
                     if ([[rfidPacketBufferInHexString substringWithRange:NSMakeRange(4, 4)] isEqualToString:@"49DC"] &&
@@ -5001,10 +5262,10 @@
                             tag.rssi = (Byte)[CSLBleReader E710DecodeRSSI:hb lowByte:lb];
                             tag.portNumber=0;
                             ptr+= (2 + ((tag.PC >> 11) * 2) + 2);
+                            tag.timestamp = [NSDate date];
                             [self.readerDelegate didReceiveTagResponsePacket:self tagReceived:tag]; //this will call the method for handling the tag response.
                             
                             NSLog(@"[decodePacketsInBufferAsync] Tag data found: PC=%04X EPC=%@ rssi=%d", tag.PC, tag.EPC, tag.rssi);
-                            tag.timestamp = [NSDate date];
                             rangingTagCount++;
                             
                             @synchronized(filteredBuffer) {
@@ -5101,12 +5362,12 @@
                             }
 
                             tag.portNumber = ((Byte *)[rfidPacketBuffer bytes])[17];
+                            tag.timestamp=[NSDate date];
                             ptr+= (7 + mulitbankPacketLen);
                             
                             [self.readerDelegate didReceiveTagResponsePacket:self tagReceived:tag]; //this will call the method for handling the tag response.
                             
                             NSLog(@"[decodePacketsInBufferAsync] Tag data found: PC=%04X EPC=%@ DATA1=%@ DATA2=%@ rssi=%d", tag.PC, tag.EPC, tag.DATA1, tag.DATA2, tag.rssi);
-                            tag.timestamp=[NSDate date];
                             rangingTagCount++;
                             
                             @synchronized(filteredBuffer) {

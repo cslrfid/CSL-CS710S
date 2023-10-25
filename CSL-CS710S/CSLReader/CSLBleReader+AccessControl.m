@@ -1696,7 +1696,14 @@
     return result;
 }
 
-- (BOOL) E710SelectTag:(Byte)set_number maskBank:(MEMORYBANK)maskbank maskPointer:(UInt32)ptr maskLength:(Byte)length maskData:(NSData*)mask {
+- (BOOL) E710SelectTag:(Byte)set_number
+              maskBank:(MEMORYBANK)maskbank
+           maskPointer:(UInt32)ptr
+            maskLength:(Byte)length
+              maskData:(NSData*)mask
+                target:(Byte)target
+                action:(Byte)action
+       postConfigDelay:(Byte)post_delay {
     
     Byte errorCode;
     NSData* regData;
@@ -1720,7 +1727,7 @@
     }
     
     //select offset (number of bits)
-    regData = [[NSData alloc] initWithBytes:(unsigned char[]){ ptr & 0xFF000000 >> 24, ptr & 0x00FF0000 >> 16, ptr & 0x0000FF00 >> 8, ptr & 0x000000FF } length:4];
+    regData = [[NSData alloc] initWithBytes:(unsigned char[]){ (ptr & 0xFF000000) >> 24, (ptr & 0x00FF0000) >> 16, (ptr & 0x0000FF00) >> 8, ptr & 0x000000FF } length:4];
     if (![self E710WriteRegister:self atAddr:startAddress+2 regLength:4 forData:regData timeOutInSeconds:1 error:&errorCode])
     {
         NSLog(@"RFID SelectConfiguration set offset failed. Error code: %d", errorCode);
@@ -1742,15 +1749,28 @@
         return false;
     }
     
-    regData = [[NSData alloc] initWithBytes:(unsigned char[]){ 1 } length:1];
-    
-    //AntennaPortConfig target toggle = 1
-    if (![self E710WriteRegister:self atAddr:0x303D regLength:1 forData:regData timeOutInSeconds:1 error:&errorCode])
+    regData = [[NSData alloc] initWithBytes:(unsigned char[]){ target } length:1];
+    if (![self E710WriteRegister:self atAddr:startAddress+39 regLength:1 forData:regData timeOutInSeconds:1 error:&errorCode])
     {
-        NSLog(@"RFID SntennaPortConfig set toggle failed. Error code: %d", errorCode);
+        NSLog(@"RFID SelectConfiguration set target failed. Error code: %d", errorCode);
         return false;
     }
     
+    regData = [[NSData alloc] initWithBytes:(unsigned char[]){ action } length:1];
+    if (![self E710WriteRegister:self atAddr:startAddress+40 regLength:1 forData:regData timeOutInSeconds:1 error:&errorCode])
+    {
+        NSLog(@"RFID SelectConfiguration set action failed. Error code: %d", errorCode);
+        return false;
+    }
+    
+    regData = [[NSData alloc] initWithBytes:(unsigned char[]){ post_delay } length:1];
+    if (![self E710WriteRegister:self atAddr:startAddress+41 regLength:1 forData:regData timeOutInSeconds:1 error:&errorCode])
+    {
+        NSLog(@"RFID SelectConfiguration set post configuration delay failed. Error code: %d", errorCode);
+        return false;
+    }
+    
+    regData = [[NSData alloc] initWithBytes:(unsigned char[]){ 1 } length:1];
     //enable set
     if (![self E710WriteRegister:self atAddr:startAddress regLength:1 forData:regData timeOutInSeconds:1 error:&errorCode])
     {
@@ -1907,10 +1927,17 @@
     
     //if mask data is not nil, tag will be selected before reading
     if (mask_data != nil)
-        [self E710SelectTag:0 maskBank:mask_bank maskPointer:(bank == EPC ? 32 : 0) maskLength:mask_Length maskData:mask_data];
+        [self E710SelectTag:0
+                   maskBank:mask_bank
+                maskPointer:mask_pointer
+                 maskLength:mask_Length
+                   maskData:mask_data
+                     target:4
+                     action:0
+            postConfigDelay:0];
     
     //set access password
-    regData = [[NSData alloc] initWithBytes:(unsigned char[]){ password & 0xFF000000 >> 24, password & 0x00FF0000 >> 16, password & 0x0000FF00 >> 8, password & 0x000000FF } length:4];
+    regData = [[NSData alloc] initWithBytes:(unsigned char[]){ (password & 0xFF000000) >> 24, (password & 0x00FF0000 )>> 16, (password & 0x0000FF00) >> 8, password & 0x000000FF } length:4];
     if (![self E710WriteRegister:self atAddr:0x38A6 regLength:4 forData:regData timeOutInSeconds:1 error:&errorCode])
     {
         NSLog(@"E710StartTagMemoryRead failed. Failed to set access password.  Error code: %d", errorCode);
@@ -1919,8 +1946,12 @@
         return false;
     }
     
-    //for multiplebank read configurations
-    if (![self E710MultibankReadConfig:0 IsEnabled:TRUE Bank:bank Offset:offset Length:count]) {
+    //for Multi-bank read configurations
+    //For EPC bank, read one full
+    Byte MBOffset = bank == EPC ? offset - 1 : offset;
+    if (MBOffset < 0)
+        MBOffset = 0;
+    if (![self E710MultibankReadConfig:0 IsEnabled:TRUE Bank:bank Offset:MBOffset Length:(bank == EPC ? count+1 : count)]) {
         NSLog(@"E710StartTagMemoryRead failed. Failed to set mulit-bank read.  Error code: %d", errorCode);
         connectStatus=CONNECTED;
         [self.delegate didInterfaceChangeConnectStatus:self]; //this will call the method for connections status chagnes.
@@ -1952,6 +1983,77 @@
     
 }
 
+- (BOOL)E710SSCSLRFIDWriteMB {
+
+    if (self.readerModelNumber != CS710) {
+        NSLog(@"RFID command failed. Invalid reader");
+        return false;
+    }
+    
+    if ([self E710SendShortOperationCommand:self CommandCode:0x10B2 timeOutInSeconds:1])
+    {
+        NSLog(@"Write mulit-bank data: OK");
+        return true;
+
+    }
+    NSLog(@"Write mulit-bank data: FAILED");
+    return false;
+    
+}
+
+- (BOOL)E710SCSLRFIDLock {
+    
+    if (self.readerModelNumber != CS710) {
+        NSLog(@"RFID command failed. Invalid reader");
+        return false;
+    }
+    
+    if ([self E710SendShortOperationCommand:self CommandCode:0x10B7 timeOutInSeconds:1])
+    {
+        NSLog(@"RFID Lock: OK");
+        return true;
+        
+    }
+    NSLog(@"RFID Lock: FAILED");
+    return false;
+    
+}
+
+- (BOOL)E710SCSLRFIDKill {
+    
+    if (self.readerModelNumber != CS710) {
+        NSLog(@"RFID command failed. Invalid reader");
+        return false;
+    }
+    
+    if ([self E710SendShortOperationCommand:self CommandCode:0x10B8 timeOutInSeconds:1])
+    {
+        NSLog(@"RFID Kill: OK");
+        return true;
+        
+    }
+    NSLog(@"RFID Kill: FAILED");
+    return false;
+    
+}
+
+- (BOOL)E710SCSLRFIDStartSelectInventory{
+    
+    if (self.readerModelNumber != CS710) {
+        NSLog(@"RFID command failed. Invalid reader");
+        return false;
+    }
+    
+    if ([self E710SendShortOperationCommand:self CommandCode:0x10A3 timeOutInSeconds:1])
+    {
+        NSLog(@"RFID Tag Search: OK");
+        return true;
+        
+    }
+    NSLog(@"RFID Tag Search: FAILED");
+    return false;
+    
+}
 
 - (BOOL) startTagMemoryWrite:(MEMORYBANK)bank dataOffset:(UInt16)offset dataCount:(UInt16)count writeData:(NSData*)data ACCPWD:(UInt32)password maskBank:(MEMORYBANK)mask_bank maskPointer:(UInt16)mask_pointer maskLength:(UInt32)mask_Length maskData:(NSData*)mask_data {
     
@@ -2098,83 +2200,148 @@
     return result;
 }
 
-- (BOOL) startTagSearch:(MEMORYBANK)mask_bank maskPointer:(UInt16)mask_pointer maskLength:(UInt32)mask_Length maskData:(NSData*)mask_data {
-    
+- (BOOL) E710StartTagMemoryWrite:(MEMORYBANK)bank dataOffset:(UInt16)offset dataCount:(UInt16)count writeData:(NSData*)data ACCPWD:(UInt32)password maskBank:(MEMORYBANK)mask_bank maskPointer:(UInt16)mask_pointer maskLength:(UInt32)mask_Length maskData:(NSData*)mask_data {
+
     BOOL result=true;
-    CSLBlePacket *recvPacket;
-    
-    result=[self setParametersForTagSearch];
-    self.isTagAccessMode=true;
+    Byte errorCode;
+    NSData* regData;
     
     //if mask data is not nil, tag will be selected before reading
     if (mask_data != nil)
-        result=[self selectTagForSearch:mask_bank maskPointer:32 maskLength:mask_Length  maskData:mask_data];
+        [self E710SelectTag:0
+                   maskBank:mask_bank
+                maskPointer:mask_pointer
+                 maskLength:mask_Length
+                   maskData:mask_data
+                     target:4
+                     action:0
+            postConfigDelay:0];
     
-    result = [self sendHostCommandSearch];
-    
-    //wait for the command-begin and command-end packet
-    for (int i=0;i<COMMAND_TIMEOUT_5S;i++) { //receive data or time out in 5 seconds
-        if ([self.cmdRespQueue count] >= 1)
-            break;
-        [NSThread sleepForTimeInterval:0.001f];
-    }
-    
-    if ([self.cmdRespQueue count] < 1) {
-        NSLog(@"Tag search command timed out.");
+    //set access password
+    regData = [[NSData alloc] initWithBytes:(unsigned char[]){ (password & 0xFF000000) >> 24, (password & 0x00FF0000 )>> 16, (password & 0x0000FF00) >> 8, password & 0x000000FF } length:4];
+    if (![self E710WriteRegister:self atAddr:0x38A6 regLength:4 forData:regData timeOutInSeconds:1 error:&errorCode])
+    {
+        NSLog(@"E710StartTagMemoryWrite failed. Failed to set access password.  Error code: %d", errorCode);
         connectStatus=CONNECTED;
         [self.delegate didInterfaceChangeConnectStatus:self]; //this will call the method for connections status chagnes.
         return false;
     }
     
-    //command-begin
-    recvPacket = ((CSLBlePacket *)[self.cmdRespQueue deqObject]);
-    if (([[recvPacket.getPacketPayloadInHexString substringWithRange:NSMakeRange(4, 2)] isEqualToString:@"02"] &&
-         [[recvPacket.getPacketPayloadInHexString substringWithRange:NSMakeRange(8, 4)] isEqualToString:@"0080"]) ||
-        ([[recvPacket.getPacketPayloadInHexString substringWithRange:NSMakeRange(4, 2)] isEqualToString:@"01"] &&
-         [[recvPacket.getPacketPayloadInHexString substringWithRange:NSMakeRange(8, 4)] isEqualToString:@"0000"])
-        ) {
-        self.lastMacErrorCode=0x0000;
-        NSLog(@"Receive search command-begin response: OK");
-    }
-    else
-    {
-        NSLog(@"Receive search command-begin response: FAILED");
+    //for Multi-bank read configurations
+    //For EPC bank, read one full
+    if (![self E710MultibankWriteConfig:0 IsEnabled:TRUE Bank:bank Offset:offset Length:count forData:data]) {
+        NSLog(@"E710StartTagMemoryWrite failed. Failed to set mulit-bank write.  Error code: %d", errorCode);
         connectStatus=CONNECTED;
         [self.delegate didInterfaceChangeConnectStatus:self]; //this will call the method for connections status chagnes.
-        return FALSE;
+        return false;
     }
-    connectStatus=TAG_OPERATIONS;
-    //[self performSelectorInBackground:@selector(decodePacketsInBufferAsync) withObject:(nil)];
-    return true;
+    
+    result = [self E710SSCSLRFIDWriteMB];
+    
+    connectStatus=CONNECTED;
+    [self.delegate didInterfaceChangeConnectStatus:self]; //this will call the method for connections status chagnes.
+    return result;
+}
+
+- (BOOL) startTagSearch:(MEMORYBANK)mask_bank maskPointer:(UInt16)mask_pointer maskLength:(UInt32)mask_Length maskData:(NSData*)mask_data {
+    
+    if (self.readerModelNumber != CS710) {
+        BOOL result=true;
+        CSLBlePacket *recvPacket;
+        
+        result=[self setParametersForTagSearch];
+        self.isTagAccessMode=true;
+        
+        //if mask data is not nil, tag will be selected before reading
+        if (mask_data != nil)
+            result=[self selectTagForSearch:mask_bank maskPointer:32 maskLength:mask_Length  maskData:mask_data];
+        
+        result = [self sendHostCommandSearch];
+        
+        //wait for the command-begin and command-end packet
+        for (int i=0;i<COMMAND_TIMEOUT_5S;i++) { //receive data or time out in 5 seconds
+            if ([self.cmdRespQueue count] >= 1)
+                break;
+            [NSThread sleepForTimeInterval:0.001f];
+        }
+        
+        if ([self.cmdRespQueue count] < 1) {
+            NSLog(@"Tag search command timed out.");
+            connectStatus=CONNECTED;
+            [self.delegate didInterfaceChangeConnectStatus:self]; //this will call the method for connections status chagnes.
+            return false;
+        }
+        
+        //command-begin
+        recvPacket = ((CSLBlePacket *)[self.cmdRespQueue deqObject]);
+        if (([[recvPacket.getPacketPayloadInHexString substringWithRange:NSMakeRange(4, 2)] isEqualToString:@"02"] &&
+             [[recvPacket.getPacketPayloadInHexString substringWithRange:NSMakeRange(8, 4)] isEqualToString:@"0080"]) ||
+            ([[recvPacket.getPacketPayloadInHexString substringWithRange:NSMakeRange(4, 2)] isEqualToString:@"01"] &&
+             [[recvPacket.getPacketPayloadInHexString substringWithRange:NSMakeRange(8, 4)] isEqualToString:@"0000"])
+            ) {
+            self.lastMacErrorCode=0x0000;
+            NSLog(@"Receive search command-begin response: OK");
+        }
+        else
+        {
+            NSLog(@"Receive search command-begin response: FAILED");
+            connectStatus=CONNECTED;
+            [self.delegate didInterfaceChangeConnectStatus:self]; //this will call the method for connections status chagnes.
+            return FALSE;
+        }
+        connectStatus=TAG_OPERATIONS;
+        //[self performSelectorInBackground:@selector(decodePacketsInBufferAsync) withObject:(nil)];
+        return true;
+    }
+    else {
+        BOOL result=true;
+        Byte errorCode;
+        NSData* regData;
+        
+        //if mask data is not nil, tag will be selected before reading
+        if (mask_data != nil)
+            [self E710SelectTag:0
+                       maskBank:mask_bank
+                    maskPointer:mask_pointer
+                     maskLength:mask_Length
+                       maskData:mask_data
+                         target:4
+                         action:0
+                postConfigDelay:0];
+        
+//        regData = [[NSData alloc] initWithBytes:(unsigned char[]){ 0x66 } length:1];
+//        if (![self E710WriteRegister:self atAddr:0x3036 regLength:1 forData:regData timeOutInSeconds:1 error:&errorCode])
+//        {
+//            NSLog(@"RFID startTagSearch failed. Error code: %d", errorCode);
+//            return false;
+//        }
+//
+//        regData = [[NSData alloc] initWithBytes:(unsigned char[]){ 0x01 } length:1];
+//        if (![self E710WriteRegister:self atAddr:0x303D regLength:1 forData:regData timeOutInSeconds:1 error:&errorCode])
+//        {
+//            NSLog(@"RFID startTagSearch failed. Error code: %d", errorCode);
+//            return false;
+//        }
+//        
+//        regData = [[NSData alloc] initWithBytes:(unsigned char[]){ 0x67 } length:1];
+//        if (![self E710WriteRegister:self atAddr:0x3036 regLength:1 forData:regData timeOutInSeconds:1 error:&errorCode])
+//        {
+//            NSLog(@"RFID startTagSearch failed. Error code: %d", errorCode);
+//            return false;
+//        }
+        
+        result = [self E710SCSLRFIDStartSelectInventory];
+        
+        connectStatus=CONNECTED;
+        [self.delegate didInterfaceChangeConnectStatus:self]; //this will call the method for connections status chagnes.
+        return result;
+    }
 }
 
 - (BOOL)stopTagSearch {
     
-    //retry multiple times in case rfid module is busy on receiving the abort command
-    for (int j=0;j<3;j++)
-    {
-        [self performSelectorInBackground:@selector(stopTagSearchBlocking) withObject:(nil)];
-        
-        for (int i=0;i<COMMAND_TIMEOUT_5S;i++) {  //receive data or time out in 3 seconds
-            ([[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.001]]);
-            if(connectStatus == CONNECTED)
-                break;
-        }
-        if (connectStatus != CONNECTED)
-        {
-            NSLog(@"Abort command response failure.  Try #%d", j+1);
-            continue;
-        }
-        else
-        {
-            NSLog(@"Abort command response: OK");
-            break;
-        }
-        
-    }
-    
-    return ((connectStatus != CONNECTED) ? false : true);
-    
+    return [self stopInventory];
+
 }
 
 - (void)stopTagSearchBlocking {
@@ -2335,6 +2502,62 @@
     return result;
 }
 
+- (BOOL) E710StartTagMemoryLock:(UInt32)lockCommandConfigBits ACCPWD:(UInt32)password maskBank:(MEMORYBANK)mask_bank maskPointer:(UInt16)mask_pointer maskLength:(UInt32)mask_Length maskData:(NSData*)mask_data {
+    
+    BOOL result=true;
+    Byte errorCode;
+    NSData* regData;
+    
+    //if mask data is not nil, tag will be selected before reading
+    if (mask_data != nil)
+        [self E710SelectTag:0
+                   maskBank:mask_bank
+                maskPointer:mask_pointer
+                 maskLength:mask_Length
+                   maskData:mask_data
+                     target:4
+                     action:0
+            postConfigDelay:0];
+    
+    //set access password
+    regData = [[NSData alloc] initWithBytes:(unsigned char[]){ (password & 0xFF000000) >> 24, (password & 0x00FF0000 )>> 16, (password & 0x0000FF00) >> 8, password & 0x000000FF } length:4];
+    if (![self E710WriteRegister:self atAddr:0x38A6 regLength:4 forData:regData timeOutInSeconds:1 error:&errorCode])
+    {
+        NSLog(@"E710StartTagMemoryLock failed. Failed to set access password.  Error code: %d", errorCode);
+        connectStatus=CONNECTED;
+        [self.delegate didInterfaceChangeConnectStatus:self]; //this will call the method for connections status chagnes.
+        return false;
+    }
+    
+    //for setting mask and action bits
+    //mask bits
+    regData = [[NSData alloc] initWithBytes:(unsigned char[]){ (lockCommandConfigBits & 0xC0000) >> 18, (lockCommandConfigBits & 0x3FC00) >> 10 } length:2];
+    if (![self E710WriteRegister:self atAddr:0x38AE regLength:2 forData:regData timeOutInSeconds:1 error:&errorCode])
+    {
+        NSLog(@"E710StartTagMemoryLock failed. Failed to set lock mask.  Error code: %d", errorCode);
+        connectStatus=CONNECTED;
+        [self.delegate didInterfaceChangeConnectStatus:self]; //this will call the method for connections status chagnes.
+        return false;
+    }
+    
+    //action bits
+    regData = [[NSData alloc] initWithBytes:(unsigned char[]){ (lockCommandConfigBits & 0x300) >> 8, lockCommandConfigBits & 0xFF } length:2];
+    if (![self E710WriteRegister:self atAddr:0x38B0 regLength:2 forData:regData timeOutInSeconds:1 error:&errorCode])
+    {
+        NSLog(@"E710StartTagMemoryLock failed. Failed to set lock action.  Error code: %d", errorCode);
+        connectStatus=CONNECTED;
+        [self.delegate didInterfaceChangeConnectStatus:self]; //this will call the method for connections status chagnes.
+        return false;
+    }
+    
+    result = [self E710SCSLRFIDLock];
+    
+    connectStatus=CONNECTED;
+    [self.delegate didInterfaceChangeConnectStatus:self]; //this will call the method for connections status chagnes.
+    return result;
+    
+}
+
 - (BOOL) startTagMemoryKill:(UInt32)password maskBank:(MEMORYBANK)mask_bank maskPointer:(UInt16)mask_pointer maskLength:(UInt32)mask_Length maskData:(NSData*)mask_data{
     
     BOOL result=true;
@@ -2397,6 +2620,40 @@
         [self.delegate didInterfaceChangeConnectStatus:self]; //this will call the method for connections status chagnes.
         return FALSE;
     }
+    connectStatus=CONNECTED;
+    [self.delegate didInterfaceChangeConnectStatus:self]; //this will call the method for connections status chagnes.
+    return result;
+}
+
+- (BOOL) E710StartTagMemoryKill:(UInt32)password maskBank:(MEMORYBANK)mask_bank maskPointer:(UInt16)mask_pointer maskLength:(UInt32)mask_Length maskData:(NSData*)mask_data{
+    
+    BOOL result=true;
+    Byte errorCode;
+    NSData* regData;
+    
+    //if mask data is not nil, tag will be selected before reading
+    if (mask_data != nil)
+        [self E710SelectTag:0
+                   maskBank:mask_bank
+                maskPointer:mask_pointer
+                 maskLength:mask_Length
+                   maskData:mask_data
+                     target:4
+                     action:0
+            postConfigDelay:0];
+    
+    //set kill password
+    regData = [[NSData alloc] initWithBytes:(unsigned char[]){ (password & 0xFF000000) >> 24, (password & 0x00FF0000 )>> 16, (password & 0x0000FF00) >> 8, password & 0x000000FF } length:4];
+    if (![self E710WriteRegister:self atAddr:0x38AA regLength:4 forData:regData timeOutInSeconds:1 error:&errorCode])
+    {
+        NSLog(@"E710StartTagMemoryKill failed. Failed to set kill password.  Error code: %d", errorCode);
+        connectStatus=CONNECTED;
+        [self.delegate didInterfaceChangeConnectStatus:self]; //this will call the method for connections status chagnes.
+        return false;
+    }
+        
+    result = [self E710SCSLRFIDKill];
+    
     connectStatus=CONNECTED;
     [self.delegate didInterfaceChangeConnectStatus:self]; //this will call the method for connections status chagnes.
     return result;

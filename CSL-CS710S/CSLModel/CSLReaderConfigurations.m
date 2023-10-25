@@ -96,9 +96,25 @@
     }
     else
     {
-        [[CSLRfidAppEngine sharedAppEngine].reader E710SetAntennaConfig:0 PortEnable:TRUE];
-        [[CSLRfidAppEngine sharedAppEngine].reader setPower:0 PowerLevel:[CSLRfidAppEngine sharedAppEngine].settings.power];
+        [[CSLRfidAppEngine sharedAppEngine].reader E710SetAntennaConfig:0 PortEnable:TRUE TargetToggle:[CSLRfidAppEngine sharedAppEngine].settings.target == ToggleAB];
+        [[CSLRfidAppEngine sharedAppEngine].reader setPower:0 PowerLevel:[CSLRfidAppEngine sharedAppEngine].settings.power / 10];
         [[CSLRfidAppEngine sharedAppEngine].reader setAntennaDwell:0 time:2000];
+        [[CSLRfidAppEngine sharedAppEngine].reader E710SetInventoryRoundControl:0
+                                                                       InitialQ:[CSLRfidAppEngine sharedAppEngine].settings.QValue
+                                                                           MaxQ:15
+                                                                           MinQ:0
+                                                                  NumMinQCycles:3
+                                                                     FixedQMode:[CSLRfidAppEngine sharedAppEngine].settings.algorithm == FIXEDQ ? TRUE : FALSE
+                                                              QIncreaseUseQuery:TRUE
+                                                              QDecreaseUseQuery:TRUE
+                                                                        Session:[CSLRfidAppEngine sharedAppEngine].settings.session
+                                                              SelInQueryCommand:([CSLRfidAppEngine sharedAppEngine].settings.FastId || [CSLRfidAppEngine sharedAppEngine].settings.prefilterIsEnabled) ? SL : ALL
+                                                                    QueryTarget:[CSLRfidAppEngine sharedAppEngine].settings.target == ToggleAB ? A : [CSLRfidAppEngine sharedAppEngine].settings.target
+                                                                  HaltOnAllTags:0
+                                                                   FastIdEnable:[CSLRfidAppEngine sharedAppEngine].settings.FastId
+                                                                 TagFocusEnable:[CSLRfidAppEngine sharedAppEngine].settings.tagFocus
+                                                        MaxQueriesSinceValidEpc:8
+                                                                   TargetToggle:[CSLRfidAppEngine sharedAppEngine].settings.target == ToggleAB ? TRUE : FALSE];
     }
 
 }
@@ -160,9 +176,25 @@
     else
     {
         //CS710
-        [[CSLRfidAppEngine sharedAppEngine].reader E710SetAntennaConfig:0 PortEnable:TRUE];
-        [[CSLRfidAppEngine sharedAppEngine].reader setPower:0 PowerLevel:[CSLRfidAppEngine sharedAppEngine].settings.power];
+        [[CSLRfidAppEngine sharedAppEngine].reader E710SetAntennaConfig:0 PortEnable:TRUE TargetToggle:TRUE];
+        [[CSLRfidAppEngine sharedAppEngine].reader setPower:0 PowerLevel:[CSLRfidAppEngine sharedAppEngine].settings.power / 10];
         [[CSLRfidAppEngine sharedAppEngine].reader setAntennaDwell:0 time:2000];
+        [[CSLRfidAppEngine sharedAppEngine].reader E710SetInventoryRoundControl:0
+                                                                       InitialQ:[CSLRfidAppEngine sharedAppEngine].settings.QValue
+                                                                           MaxQ:15
+                                                                           MinQ:0
+                                                                  NumMinQCycles:3
+                                                                     FixedQMode:FIXEDQ
+                                                              QIncreaseUseQuery:TRUE
+                                                              QDecreaseUseQuery:TRUE
+                                                                        Session:S0
+                                                              SelInQueryCommand:SL
+                                                                    QueryTarget:A
+                                                                  HaltOnAllTags:0
+                                                                   FastIdEnable:[CSLRfidAppEngine sharedAppEngine].settings.FastId
+                                                                 TagFocusEnable:[CSLRfidAppEngine sharedAppEngine].settings.tagFocus
+                                                        MaxQueriesSinceValidEpc:8
+                                                                   TargetToggle:TRUE];
     }
 
 }
@@ -224,6 +256,25 @@
     else
     {
         //CS710S
+        [[CSLRfidAppEngine sharedAppEngine].reader E710SetAntennaConfig:0 PortEnable:TRUE TargetToggle:TRUE];
+        [[CSLRfidAppEngine sharedAppEngine].reader setPower:0 PowerLevel:[CSLRfidAppEngine sharedAppEngine].settings.power / 10];
+        [[CSLRfidAppEngine sharedAppEngine].reader setAntennaDwell:0 time:2000];
+        [[CSLRfidAppEngine sharedAppEngine].reader E710SetInventoryRoundControl:0
+                                                                       InitialQ:[CSLRfidAppEngine sharedAppEngine].settings.QValue
+                                                                           MaxQ:15
+                                                                           MinQ:0
+                                                                  NumMinQCycles:3
+                                                                     FixedQMode:FIXEDQ
+                                                              QIncreaseUseQuery:TRUE
+                                                              QDecreaseUseQuery:TRUE
+                                                                        Session:S0
+                                                              SelInQueryCommand:SL
+                                                                    QueryTarget:A
+                                                                  HaltOnAllTags:0
+                                                                   FastIdEnable:[CSLRfidAppEngine sharedAppEngine].settings.FastId
+                                                                 TagFocusEnable:[CSLRfidAppEngine sharedAppEngine].settings.tagFocus
+                                                        MaxQueriesSinceValidEpc:8
+                                                                   TargetToggle:TRUE];
     }
 
 }
@@ -370,25 +421,21 @@
                                                                     Length:[CSLRfidAppEngine sharedAppEngine].settings.multibank2Length];
         
         [[CSLRfidAppEngine sharedAppEngine].reader setLinkProfile:[CSLRfidAppEngine sharedAppEngine].settings.linkProfile];
-        [[CSLRfidAppEngine sharedAppEngine].reader E710SetInventoryRoundControl:0
-                                                                       InitialQ:[CSLRfidAppEngine sharedAppEngine].settings.QValue
-                                                                           MaxQ:15
-                                                                           MinQ:0
-                                                                  NumMinQCycles:3
-                                                                     FixedQMode:[CSLRfidAppEngine sharedAppEngine].settings.algorithm == FIXEDQ ? TRUE : FALSE
-                                                              QIncreaseUseQuery:TRUE
-                                                              QDecreaseUseQuery:TRUE
-                                                                        Session:[CSLRfidAppEngine sharedAppEngine].settings.session
-                                                              SelInQueryCommand:0
-                                                                    QueryTarget:[CSLRfidAppEngine sharedAppEngine].settings.target == ToggleAB ? A : [CSLRfidAppEngine sharedAppEngine].settings.target
-                                                                  HaltOnAllTags:0
-                                                                   FastIdEnable:[CSLRfidAppEngine sharedAppEngine].settings.FastId
-                                                                 TagFocusEnable:[CSLRfidAppEngine sharedAppEngine].settings.tagFocus
-                                                        MaxQueriesSinceValidEpc:8
-                                                                   TargetToggle:[CSLRfidAppEngine sharedAppEngine].settings.target == ToggleAB ? TRUE : FALSE];
         [[CSLRfidAppEngine sharedAppEngine].reader E710SetDuplicateEliminationRollingWindow:[CSLRfidAppEngine sharedAppEngine].settings.DuplicateEliminiationWindow];
         [[CSLRfidAppEngine sharedAppEngine].reader E710SetIntraPacketDelay:4];
         [[CSLRfidAppEngine sharedAppEngine].reader E710SetEventPacketUplinkEnable:TRUE InventoryEnd:FALSE CrcError:TRUE TagReadRate:TRUE];
+        
+        //fast id
+        if ([CSLRfidAppEngine sharedAppEngine].settings.FastId) {
+            [[CSLRfidAppEngine sharedAppEngine].reader E710SelectTag:0
+                       maskBank:TID
+                    maskPointer:0
+                     maskLength:24
+                       maskData:[CSLBleReader convertHexStringToData:@"E2801100"]
+                         target:4
+                         action:0
+                postConfigDelay:0];
+        }
 
     }
     
@@ -397,7 +444,37 @@
 + (void) setAntennaPortsAndPowerForTemperatureTags:(BOOL)isInitial {
 
     if ([CSLRfidAppEngine sharedAppEngine].reader.readerModelNumber==CS710) {
-        
+        //CS710S
+        [[CSLRfidAppEngine sharedAppEngine].reader E710SetAntennaConfig:0 PortEnable:TRUE TargetToggle:TRUE];
+        if ([CSLRfidAppEngine sharedAppEngine].temperatureSettings.powerLevel!=SYSTEMSETTING) {
+            if ([CSLRfidAppEngine sharedAppEngine].temperatureSettings.powerLevel==HIGHPOWER)
+                [[CSLRfidAppEngine sharedAppEngine].reader setPower:0 PowerLevel:30];
+            else if ([CSLRfidAppEngine sharedAppEngine].temperatureSettings.powerLevel==LOWPOWER)
+                [[CSLRfidAppEngine sharedAppEngine].reader setPower:0 PowerLevel:16];
+            else if ([CSLRfidAppEngine sharedAppEngine].temperatureSettings.powerLevel==MEDIUMPOWER)
+                [[CSLRfidAppEngine sharedAppEngine].reader setPower:0 PowerLevel:23];
+        }
+        else {
+            [[CSLRfidAppEngine sharedAppEngine].reader setPower:0 PowerLevel:[CSLRfidAppEngine sharedAppEngine].settings.power / 10];
+        }
+        [[CSLRfidAppEngine sharedAppEngine].reader E710SetInventoryRoundControl:0
+                                                                       InitialQ:[CSLRfidAppEngine sharedAppEngine].settings.QValue
+                                                                           MaxQ:15
+                                                                           MinQ:0
+                                                                  NumMinQCycles:3
+                                                                     FixedQMode:[CSLRfidAppEngine sharedAppEngine].settings.algorithm == FIXEDQ ? TRUE : FALSE
+                                                              QIncreaseUseQuery:TRUE
+                                                              QDecreaseUseQuery:TRUE
+                                                                        Session:S1
+                                                              SelInQueryCommand:SL
+                                                                    QueryTarget:A
+                                                                  HaltOnAllTags:0
+                                                                   FastIdEnable:FALSE
+                                                                 TagFocusEnable:FALSE
+                                                        MaxQueriesSinceValidEpc:8
+                                                                   TargetToggle:TRUE];
+        [[CSLRfidAppEngine sharedAppEngine].reader E710SetDuplicateEliminationRollingWindow:0];
+        [[CSLRfidAppEngine sharedAppEngine].reader setAntennaDwell:0 time:2000];
     }
     else
     {
@@ -534,53 +611,151 @@
 
 + (void) setConfigurationsForTemperatureTags {
     
+    MEMORYBANK multibank1;
+    Byte multibank1Offset;
+    Byte multibank1Length;
+    BOOL isMultibank1Enabled;
+    
+    MEMORYBANK multibank2;
+    Byte multibank2Offset;
+    Byte multibank2Length;
+    BOOL isMultibank2Enabled;
+    
+    //pre-configure inventory
+    //hardcode multibank inventory parameter for RFMicron tag reading (EPC+OCRSSI+TEMPERATURE)
+    isMultibank1Enabled = true;
+    isMultibank2Enabled = true;
+    
+    //check if Xerxes or Magnus tag
+    if ([CSLRfidAppEngine sharedAppEngine].temperatureSettings.sensorType==XERXES) {
+        multibank1=USER;
+        multibank1Offset=0x12;    //word address 0xC in the RESERVE bank
+        multibank1Length=0x04;
+        multibank2=RESERVED;
+        multibank2Offset=0x0A;
+        multibank2Length=0x05;
+    }
+    else {
+        //check and see if this is S2 or S3 chip for capturing sensor code
+        multibank1=RESERVED;
+        if ([CSLRfidAppEngine sharedAppEngine].temperatureSettings.sensorType==MAGNUSS3) {
+            multibank1Offset=12;    //word address 0xC in the RESERVE bank
+            multibank1Length=3;
+        }
+        else {
+            multibank1Offset=11;    //word address 0xB in the RESERVE bank
+            multibank1Length=1;
+        }
+        
+        if ([CSLRfidAppEngine sharedAppEngine].temperatureSettings.sensorType==MAGNUSS3) {
+            multibank2=USER;
+            multibank2Offset=8;
+            multibank2Length=4;
+        }
+        else {
+            multibank2=RESERVED;
+            multibank2Offset=13;
+            multibank2Length=1;
+        }
+    }
+    
+    //multiple bank select
+    unsigned char emptyByte[] = {0x00};
+    unsigned char OCRSSI[] = {0x20};
+    
     if ([CSLRfidAppEngine sharedAppEngine].reader.readerModelNumber==CS710) {
+
+        [[CSLRfidAppEngine sharedAppEngine].reader setLinkProfile:MID_244];
+        [[CSLRfidAppEngine sharedAppEngine].reader E710SetIntraPacketDelay:0];
+        [[CSLRfidAppEngine sharedAppEngine].reader E710SetEventPacketUplinkEnable:TRUE InventoryEnd:FALSE CrcError:TRUE TagReadRate:TRUE];
+        
+        [self setConfigurationsForClearAllSelectionsAndMultibanks];
+        
+        //for multiplebank inventory
+        [[CSLRfidAppEngine sharedAppEngine].reader E710MultibankReadConfig:0
+                                                                 IsEnabled:isMultibank1Enabled
+                                                                      Bank:multibank1
+                                                                    Offset:multibank1Offset
+                                                                    Length:multibank1Length];
+        
+        [[CSLRfidAppEngine sharedAppEngine].reader E710MultibankReadConfig:1
+                                                                 IsEnabled:isMultibank2Enabled && isMultibank2Enabled
+                                                                      Bank:multibank2
+                                                                    Offset:multibank2Offset
+                                                                    Length:multibank2Length];
+        
+        if ([CSLRfidAppEngine sharedAppEngine].temperatureSettings.sensorType==XERXES) {
+            [[CSLRfidAppEngine sharedAppEngine].reader E710SelectTag:0
+                       maskBank:TID
+                    maskPointer:0
+                     maskLength:32
+                       maskData:[CSLBleReader convertHexStringToData:[NSString stringWithFormat:@"%8X", XERXES]]
+                         target:4
+                         action:0
+                postConfigDelay:0];
+            [[CSLRfidAppEngine sharedAppEngine].reader E710SelectTag:1
+                       maskBank:USER
+                    maskPointer:0x03B0
+                     maskLength:8
+                       maskData:[NSData dataWithBytes:emptyByte length:sizeof(emptyByte)]
+                         target:4
+                         action:5
+                postConfigDelay:15];
+        }
+        else if ([CSLRfidAppEngine sharedAppEngine].temperatureSettings.sensorType==MAGNUSS3) {
+            [[CSLRfidAppEngine sharedAppEngine].reader E710SelectTag:0
+                       maskBank:TID
+                    maskPointer:0
+                     maskLength:28
+                       maskData:[CSLBleReader convertHexStringToData:[NSString stringWithFormat:@"%8X", MAGNUSS3]]
+                         target:4
+                         action:0
+                postConfigDelay:0];
+            [[CSLRfidAppEngine sharedAppEngine].reader E710SelectTag:1
+                       maskBank:USER
+                    maskPointer:0xE0
+                     maskLength:0
+                       maskData:[NSData dataWithBytes:emptyByte length:sizeof(emptyByte)]
+                         target:4
+                         action:2
+                postConfigDelay:0];
+            [[CSLRfidAppEngine sharedAppEngine].reader E710SelectTag:2
+                       maskBank:USER
+                    maskPointer:0xD0
+                     maskLength:8
+                       maskData:[NSData dataWithBytes:OCRSSI length:sizeof(OCRSSI)]
+                         target:4
+                         action:2
+                postConfigDelay:0];
+        }
+        else {
+            [[CSLRfidAppEngine sharedAppEngine].reader E710SelectTag:0
+                       maskBank:TID
+                    maskPointer:0
+                     maskLength:28
+                       maskData:[CSLBleReader convertHexStringToData:[NSString stringWithFormat:@"%8X", MAGNUSS2]]
+                         target:4
+                         action:0
+                postConfigDelay:0];
+            [[CSLRfidAppEngine sharedAppEngine].reader E710SelectTag:1
+                       maskBank:USER
+                    maskPointer:0xA0
+                     maskLength:8
+                       maskData:[NSData dataWithBytes:OCRSSI length:sizeof(OCRSSI)]
+                         target:4
+                         action:2
+                postConfigDelay:0];
+        }
+        
         
     }
     else
     {
-        //pre-configure inventory
-        //hardcode multibank inventory parameter for RFMicron tag reading (EPC+OCRSSI+TEMPERATURE)
-        [CSLRfidAppEngine sharedAppEngine].settings.isMultibank1Enabled = true;
-        [CSLRfidAppEngine sharedAppEngine].settings.isMultibank2Enabled = true;
-        
-        //check if Xerxes or Magnus tag
-        if ([CSLRfidAppEngine sharedAppEngine].temperatureSettings.sensorType==XERXES) {
-            [CSLRfidAppEngine sharedAppEngine].settings.multibank1=USER;
-            [CSLRfidAppEngine sharedAppEngine].settings.multibank1Offset=0x12;    //word address 0xC in the RESERVE bank
-            [CSLRfidAppEngine sharedAppEngine].settings.multibank1Length=0x04;
-            [CSLRfidAppEngine sharedAppEngine].settings.multibank2=RESERVED;
-            [CSLRfidAppEngine sharedAppEngine].settings.multibank2Offset=0x0A;
-            [CSLRfidAppEngine sharedAppEngine].settings.multibank2Length=0x05;
-        }
-        else {
-            //check and see if this is S2 or S3 chip for capturing sensor code
-            [CSLRfidAppEngine sharedAppEngine].settings.multibank1=RESERVED;
-            if ([CSLRfidAppEngine sharedAppEngine].temperatureSettings.sensorType==MAGNUSS3) {
-                [CSLRfidAppEngine sharedAppEngine].settings.multibank1Offset=12;    //word address 0xC in the RESERVE bank
-                [CSLRfidAppEngine sharedAppEngine].settings.multibank1Length=3;
-            }
-            else {
-                [CSLRfidAppEngine sharedAppEngine].settings.multibank1Offset=11;    //word address 0xB in the RESERVE bank
-                [CSLRfidAppEngine sharedAppEngine].settings.multibank1Length=1;
-            }
-            
-            if ([CSLRfidAppEngine sharedAppEngine].temperatureSettings.sensorType==MAGNUSS3) {
-                [CSLRfidAppEngine sharedAppEngine].settings.multibank2=USER;
-                [CSLRfidAppEngine sharedAppEngine].settings.multibank2Offset=8;
-                [CSLRfidAppEngine sharedAppEngine].settings.multibank2Length=4;
-            }
-            else {
-                [CSLRfidAppEngine sharedAppEngine].settings.multibank2=RESERVED;
-                [CSLRfidAppEngine sharedAppEngine].settings.multibank2Offset=13;
-                [CSLRfidAppEngine sharedAppEngine].settings.multibank2Length=1;
-            }
-        }
         //for multiplebank inventory
         Byte tagRead=0;
-        if ([CSLRfidAppEngine sharedAppEngine].settings.isMultibank1Enabled && [CSLRfidAppEngine sharedAppEngine].settings.isMultibank2Enabled)
+        if (isMultibank1Enabled && isMultibank2Enabled)
             tagRead=2;
-        else if ([CSLRfidAppEngine sharedAppEngine].settings.isMultibank1Enabled)
+        else if (isMultibank1Enabled)
             tagRead=1;
         else
             tagRead=0;
@@ -600,10 +775,6 @@
         [[CSLRfidAppEngine sharedAppEngine].reader setQueryConfigurations:A querySession:S1 querySelect:SL];
         [[CSLRfidAppEngine sharedAppEngine].reader setInventoryConfigurations:DYNAMICQ MatchRepeats:0 tagSelect:0 disableInventory:0 tagRead:0 crcErrorRead:0 QTMode:0 tagDelay:0 inventoryMode:0]; //0x0901
         [[CSLRfidAppEngine sharedAppEngine].reader setLinkProfile:RANGE_DRM];
-        
-        //multiple bank select
-        unsigned char emptyByte[] = {0x00};
-        unsigned char OCRSSI[] = {0x20};
         
         //select the TID for either S2 or S3 chip
         [[CSLRfidAppEngine sharedAppEngine].reader clearAllTagSelect];
@@ -638,9 +809,9 @@
         
         // if multibank read is enabled
         if (tagRead) {
-            [[CSLRfidAppEngine sharedAppEngine].reader TAGACC_BANK:[CSLRfidAppEngine sharedAppEngine].settings.multibank1 acc_bank2:[CSLRfidAppEngine sharedAppEngine].settings.multibank2];
-            [[CSLRfidAppEngine sharedAppEngine].reader TAGACC_PTR:([CSLRfidAppEngine sharedAppEngine].settings.multibank2Offset << 16) + [CSLRfidAppEngine sharedAppEngine].settings.multibank1Offset];
-            [[CSLRfidAppEngine sharedAppEngine].reader TAGACC_CNT:(tagRead ? [CSLRfidAppEngine sharedAppEngine].settings.multibank1Length : 0) secondBank:(tagRead==2 ? [CSLRfidAppEngine sharedAppEngine].settings.multibank2Length : 0)];
+            [[CSLRfidAppEngine sharedAppEngine].reader TAGACC_BANK:multibank1 acc_bank2:multibank2];
+            [[CSLRfidAppEngine sharedAppEngine].reader TAGACC_PTR:(multibank2Offset << 16) + multibank1Offset];
+            [[CSLRfidAppEngine sharedAppEngine].reader TAGACC_CNT:(tagRead ? multibank1Length : 0) secondBank:(tagRead==2 ? multibank2Length : 0)];
             [[CSLRfidAppEngine sharedAppEngine].reader TAGACC_ACCPWD:0x00000000];
             [[CSLRfidAppEngine sharedAppEngine].reader setInventoryConfigurations:[CSLRfidAppEngine sharedAppEngine].settings.algorithm MatchRepeats:0 tagSelect:1 disableInventory:0 tagRead:tagRead crcErrorRead:true QTMode:0 tagDelay:(tagRead ? 30 : 0) inventoryMode:(tagRead ? 0 : 1)];
             [[CSLRfidAppEngine sharedAppEngine].reader setEpcMatchConfiguration:false matchOn:false matchLength:0x00000 matchOffset:0x00000];
