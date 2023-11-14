@@ -237,8 +237,8 @@
     
     //for CS463 BT mode, copy the kCBAdvDataLocalName value to the peripheral name.
     NSString* peripheralName=(NSString*)[advertisementData objectForKey:@"kCBAdvDataLocalName"];
-    
-    if (peripheralName) {
+    id objDataTxPowerLevel = [advertisementData objectForKey:@"kCBAdvDataTxPowerLevel"];
+    if (peripheralName && objDataTxPowerLevel) {
         NSMutableArray *peripherals = [self mutableArrayValueForKey:@"bleDeviceList"];
         if( ![bleDeviceList containsObject:peripheral] ) {
             if (advertisementData[@"kCBAdvDataServiceUUIDs"])
