@@ -2047,6 +2047,7 @@
     if ([self E710SendShortOperationCommand:self CommandCode:0x10A3 timeOutInSeconds:1])
     {
         NSLog(@"RFID Tag Search: OK");
+        connectStatus = TAG_OPERATIONS;
         return true;
         
     }
@@ -2295,8 +2296,6 @@
     }
     else {
         BOOL result=true;
-        Byte errorCode;
-        NSData* regData;
         
         //if mask data is not nil, tag will be selected before reading
         if (mask_data != nil)
@@ -2308,31 +2307,8 @@
                          target:4
                          action:0
                 postConfigDelay:0];
-        
-//        regData = [[NSData alloc] initWithBytes:(unsigned char[]){ 0x66 } length:1];
-//        if (![self E710WriteRegister:self atAddr:0x3036 regLength:1 forData:regData timeOutInSeconds:1 error:&errorCode])
-//        {
-//            NSLog(@"RFID startTagSearch failed. Error code: %d", errorCode);
-//            return false;
-//        }
-//
-//        regData = [[NSData alloc] initWithBytes:(unsigned char[]){ 0x01 } length:1];
-//        if (![self E710WriteRegister:self atAddr:0x303D regLength:1 forData:regData timeOutInSeconds:1 error:&errorCode])
-//        {
-//            NSLog(@"RFID startTagSearch failed. Error code: %d", errorCode);
-//            return false;
-//        }
-//        
-//        regData = [[NSData alloc] initWithBytes:(unsigned char[]){ 0x67 } length:1];
-//        if (![self E710WriteRegister:self atAddr:0x3036 regLength:1 forData:regData timeOutInSeconds:1 error:&errorCode])
-//        {
-//            NSLog(@"RFID startTagSearch failed. Error code: %d", errorCode);
-//            return false;
-//        }
-        
+                
         result = [self E710SCSLRFIDStartSelectInventory];
-        
-        connectStatus=CONNECTED;
         [self.delegate didInterfaceChangeConnectStatus:self]; //this will call the method for connections status chagnes.
         return result;
     }
