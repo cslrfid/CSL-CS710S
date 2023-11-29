@@ -5046,6 +5046,7 @@
                         [[rfidPacketBufferInHexString substringWithRange:NSMakeRange(8, 4)] isEqualToString:@"10B8"]) {
                         NSLog(@"[decodePacketsInBufferAsync] SCSLRFIDKill command response (10B8) recieved: %@", rfidPacketBufferInHexString);
                         self.lastMacErrorCode=0x0000;
+                        killTagResponse=NULL;
                         //return packet directly to the API for decoding
                         [cmdRespQueue enqObject:packet];
                         [rfidPacketBuffer setLength:0];
