@@ -1,7 +1,7 @@
 Pod::Spec.new do |spec|
 
   spec.name         = "CSL-CS710S"
-  spec.version      = "1.2.0"
+  spec.version      = "1.3.0"
   spec.summary      = "CocoaPod Framework for CSL CS710 SDK"
   spec.description  = "CSL SDK Library Framework, a library for CS710 RFID handheld devices"
 
