@@ -2766,8 +2766,7 @@
     
     Byte errorCode;
     unsigned short startAddress = 0x3030 + (16 * port_number);
-    NSData* regData = [[NSData alloc] initWithBytes:(unsigned char[]){((isEnable ? 1 : 0) & 0xFF00) >> 8, (isEnable ? 1 : 0) & 0xFF}
-                                             length:1];
+    NSData* regData = [[NSData alloc] initWithBytes:(unsigned char[]){ isEnable ? 1 : 0 } length:1];
     if (![self E710WriteRegister:self atAddr:startAddress regLength:1 forData:regData timeOutInSeconds:1 error:&errorCode])
     {
         NSLog(@"Write register failed. Error code: %d", errorCode);
