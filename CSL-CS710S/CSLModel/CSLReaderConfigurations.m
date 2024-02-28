@@ -436,6 +436,23 @@
                          action:0
                 postConfigDelay:0];
         }
+        
+        //prefilter
+        if ([CSLRfidAppEngine sharedAppEngine].settings.prefilterIsEnabled) {
+            
+            int maskOffset=0;
+            if ([CSLRfidAppEngine sharedAppEngine].settings.prefilterBank == EPC)
+                maskOffset=32;
+            [[CSLRfidAppEngine sharedAppEngine].reader E710SelectTag:0 + ([CSLRfidAppEngine sharedAppEngine].settings.FastId ? 1 : 0)
+                       maskBank:[CSLRfidAppEngine sharedAppEngine].settings.prefilterBank
+                    maskPointer:[CSLRfidAppEngine sharedAppEngine].settings.prefilterOffset + maskOffset
+                     maskLength:[[CSLRfidAppEngine sharedAppEngine].settings.prefilterMask length] * 4
+                       maskData:[CSLBleReader convertHexStringToData:[CSLRfidAppEngine sharedAppEngine].settings.prefilterMask]
+                         target:4
+                         action:0
+                postConfigDelay:0];
+            NSLog(@"selection: %d maskbank: %d mask pointer: %d mask length: %lu mask Data: %@ ", 0 + ([CSLRfidAppEngine sharedAppEngine].settings.FastId ? 1 : 0), [CSLRfidAppEngine sharedAppEngine].settings.prefilterBank, [CSLRfidAppEngine sharedAppEngine].settings.prefilterOffset + maskOffset, (unsigned long)([[CSLRfidAppEngine sharedAppEngine].settings.prefilterMask length] * 4), [CSLBleReader convertHexStringToData:[CSLRfidAppEngine sharedAppEngine].settings.prefilterMask]);
+        }
 
     }
     
