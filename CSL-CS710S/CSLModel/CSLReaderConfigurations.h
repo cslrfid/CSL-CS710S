@@ -18,6 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (void) setAntennaPortsAndPowerForTagSearch:(BOOL)isInitial;
 + (void) setAntennaPortsAndPowerForTemperatureTags:(BOOL)isInitial;
 + (void) setConfigurationsForTags;
++ (void) setConfigurationsForImpinjTags;
 + (void) setConfigurationsForTemperatureTags;
 + (void) setConfigurationsForClearAllSelectionsAndMultibanks;
 

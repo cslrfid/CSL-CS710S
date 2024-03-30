@@ -643,15 +643,30 @@ Set inventory round control
  */
 - (BOOL)startInventory;
 /**
- Start multibank inventory
+ Start single-bank compact inventory for  E710 based reader
+ @return TRUE if the operation is successful
+ */
+- (BOOL)E710StartCompactInventory;
+/**
+ Start single-bank select inventory for  E710 based reader
+ @return TRUE if the operation is successful
+ */
+- (BOOL)E710StartSelectInventory;
+/**
+ Start multibank inventory for E710 based reader
  @return TRUE if the operation is successful
  */
 - (BOOL)E710StartMBInventory;
 /**
- Start select multibank inventory
+ Start select multibank inventory for E710 based reader
  @return TRUE if the operation is successful
  */
 - (BOOL)E710StartSelectMBInventory;
+/**
+ Start select compact inventory for E710 based reader
+ @return TRUE if the operation is successful
+ */
+- (BOOL)E710StartSelectCompactInventory;
 /**
  Stop Inventory
  @return TRUE if the operation is successful
