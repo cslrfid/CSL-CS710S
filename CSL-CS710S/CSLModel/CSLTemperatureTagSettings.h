@@ -22,8 +22,7 @@ typedef NS_ENUM(UInt32, SENSORTYPE)
 {
     MAGNUSS3 = 0xE2824030,
     MAGNUSS2 = 0xE2824020,
-    XERXES = 0xE282405B,
-    IMPJM775 = 0xE2C011A2
+    XERXES = 0xE282405B
 };
 
 ///Temperature Unit

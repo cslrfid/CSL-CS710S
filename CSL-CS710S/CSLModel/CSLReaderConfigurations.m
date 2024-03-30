@@ -180,10 +180,10 @@
         [[CSLRfidAppEngine sharedAppEngine].reader setPower:0 PowerLevel:[CSLRfidAppEngine sharedAppEngine].settings.power / 10];
         [[CSLRfidAppEngine sharedAppEngine].reader setAntennaDwell:0 time:2000];
         [[CSLRfidAppEngine sharedAppEngine].reader E710SetInventoryRoundControl:0
-                                                                       InitialQ:[CSLRfidAppEngine sharedAppEngine].settings.QValue
-                                                                           MaxQ:15
+                                                                       InitialQ:0
+                                                                           MaxQ:0
                                                                            MinQ:0
-                                                                  NumMinQCycles:3
+                                                                  NumMinQCycles:0
                                                                      FixedQMode:FIXEDQ
                                                               QIncreaseUseQuery:TRUE
                                                               QDecreaseUseQuery:TRUE
@@ -426,16 +426,16 @@
         [[CSLRfidAppEngine sharedAppEngine].reader E710SetEventPacketUplinkEnable:TRUE InventoryEnd:FALSE CrcError:TRUE TagReadRate:TRUE];
         
         //fast id
-        if ([CSLRfidAppEngine sharedAppEngine].settings.FastId) {
-            [[CSLRfidAppEngine sharedAppEngine].reader E710SelectTag:0
-                       maskBank:TID
-                    maskPointer:0
-                     maskLength:24
-                       maskData:[CSLBleReader convertHexStringToData:@"E2801100"]
-                         target:4
-                         action:0
-                postConfigDelay:0];
-        }
+//        if ([CSLRfidAppEngine sharedAppEngine].settings.FastId) {
+//            [[CSLRfidAppEngine sharedAppEngine].reader E710SelectTag:0
+//                       maskBank:TID
+//                    maskPointer:0
+//                     maskLength:24
+//                       maskData:[CSLBleReader convertHexStringToData:@"E2801100"]
+//                         target:4
+//                         action:0
+//                postConfigDelay:0];
+//        }
         
         //prefilter
         if ([CSLRfidAppEngine sharedAppEngine].settings.prefilterIsEnabled) {
@@ -443,7 +443,7 @@
             int maskOffset=0;
             if ([CSLRfidAppEngine sharedAppEngine].settings.prefilterBank == EPC)
                 maskOffset=32;
-            [[CSLRfidAppEngine sharedAppEngine].reader E710SelectTag:0 + ([CSLRfidAppEngine sharedAppEngine].settings.FastId ? 1 : 0)
+            [[CSLRfidAppEngine sharedAppEngine].reader E710SelectTag:0 /*+ ([CSLRfidAppEngine sharedAppEngine].settings.FastId ? 1 : 0)*/
                        maskBank:[CSLRfidAppEngine sharedAppEngine].settings.prefilterBank
                     maskPointer:[CSLRfidAppEngine sharedAppEngine].settings.prefilterOffset + maskOffset
                      maskLength:[[CSLRfidAppEngine sharedAppEngine].settings.prefilterMask length] * 4
@@ -464,13 +464,7 @@
         [CSLRfidAppEngine sharedAppEngine].reader.readerModelNumber==CS463)  {
         //set inventory configurations
         //for multiplebank inventory
-        Byte tagRead=0;
-        if ([CSLRfidAppEngine sharedAppEngine].settings.isMultibank1Enabled && [CSLRfidAppEngine sharedAppEngine].settings.isMultibank2Enabled)
-            tagRead=2;
-        else if ([CSLRfidAppEngine sharedAppEngine].settings.isMultibank1Enabled)
-            tagRead=1;
-        else
-            tagRead=0;
+        Byte tagRead=1;
         
         Byte tagDelay=0;
         if (![CSLRfidAppEngine sharedAppEngine].settings.tagFocus && tagRead) {
@@ -495,9 +489,9 @@
         
         [[CSLRfidAppEngine sharedAppEngine].reader TAGMSK_DESC_SEL:0];
         [[CSLRfidAppEngine sharedAppEngine].reader selectTagForInventory:TID
-                                                             maskPointer:0
-                                                              maskLength:32
-                                                                maskData:[CSLBleReader convertHexStringToData:[NSString stringWithFormat:@"%8X", IMPJM775]]
+                                                             maskPointer:12
+                                                              maskLength:13
+                                                                maskData:[CSLBleReader convertHexStringToData:[NSString stringWithFormat:@"%4X", 0x0118]]
                                                               sel_action:0];
 
         
@@ -506,22 +500,22 @@
     {
         //for multiplebank inventory
         [[CSLRfidAppEngine sharedAppEngine].reader E710MultibankReadConfig:0
-                                                                 IsEnabled:[CSLRfidAppEngine sharedAppEngine].settings.isMultibank1Enabled
-                                                                      Bank:[CSLRfidAppEngine sharedAppEngine].settings.multibank1
-                                                                    Offset:[CSLRfidAppEngine sharedAppEngine].settings.multibank1Offset
-                                                                    Length:[CSLRfidAppEngine sharedAppEngine].settings.multibank1Length];
+                                                                 IsEnabled:TRUE
+                                                                      Bank:TID
+                                                                    Offset:0
+                                                                    Length:6];
         
         [[CSLRfidAppEngine sharedAppEngine].reader E710MultibankReadConfig:1
-                                                                 IsEnabled:[CSLRfidAppEngine sharedAppEngine].settings.isMultibank2Enabled && [CSLRfidAppEngine sharedAppEngine].settings.isMultibank2Enabled
+                                                                 IsEnabled:FALSE
                                                                       Bank:[CSLRfidAppEngine sharedAppEngine].settings.multibank2
                                                                     Offset:[CSLRfidAppEngine sharedAppEngine].settings.multibank2Offset
                                                                     Length:[CSLRfidAppEngine sharedAppEngine].settings.multibank2Length];
         
         [[CSLRfidAppEngine sharedAppEngine].reader E710SelectTag:0
                    maskBank:TID
-                maskPointer:0
-                 maskLength:32
-                   maskData:[CSLBleReader convertHexStringToData:[NSString stringWithFormat:@"%8X", IMPJM775]]
+                maskPointer:12
+                 maskLength:13
+                   maskData:[CSLBleReader convertHexStringToData:[NSString stringWithFormat:@"%4X", 0x0118]]
                      target:4
                      action:0
             postConfigDelay:0];

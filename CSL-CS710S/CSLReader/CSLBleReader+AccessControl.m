@@ -1742,8 +1742,10 @@
         return false;
     }
     
-    //mask data
-    if (![self E710WriteRegister:self atAddr:startAddress+7 regLength:[mask length] forData:mask timeOutInSeconds:1 error:&errorCode])
+    //mask data: pad zero until getting 32 bytes
+    NSMutableData *paddedData = [NSMutableData dataWithData:mask];
+    [paddedData increaseLengthBy:(32 - [mask length])];
+    if (![self E710WriteRegister:self atAddr:startAddress+7 regLength:[paddedData length] forData:[NSData dataWithData:paddedData] timeOutInSeconds:1 error:&errorCode])
     {
         NSLog(@"RFID SelectConfiguration set mask failed. Error code: %d", errorCode);
         return false;
@@ -1952,6 +1954,19 @@
     if (MBOffset < 0)
         MBOffset = 0;
     if (![self E710MultibankReadConfig:0 IsEnabled:TRUE Bank:bank Offset:MBOffset Length:(bank == EPC ? count+1 : count)]) {
+        NSLog(@"E710StartTagMemoryRead failed. Failed to set mulit-bank read.  Error code: %d", errorCode);
+        connectStatus=CONNECTED;
+        [self.delegate didInterfaceChangeConnectStatus:self]; //this will call the method for connections status chagnes.
+        return false;
+    }
+    //disable other two sets of config
+    if (![self E710MultibankReadConfig:1 IsEnabled:FALSE Bank:0 Offset:0 Length:0]) {
+        NSLog(@"E710StartTagMemoryRead failed. Failed to set mulit-bank read.  Error code: %d", errorCode);
+        connectStatus=CONNECTED;
+        [self.delegate didInterfaceChangeConnectStatus:self]; //this will call the method for connections status chagnes.
+        return false;
+    }
+    if (![self E710MultibankReadConfig:2 IsEnabled:FALSE Bank:0 Offset:0 Length:0]) {
         NSLog(@"E710StartTagMemoryRead failed. Failed to set mulit-bank read.  Error code: %d", errorCode);
         connectStatus=CONNECTED;
         [self.delegate didInterfaceChangeConnectStatus:self]; //this will call the method for connections status chagnes.
