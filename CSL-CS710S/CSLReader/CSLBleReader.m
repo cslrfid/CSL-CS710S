@@ -5048,6 +5048,17 @@
                         continue;
                     }
                     
+                    //Opeation command - SCSLRFIDStartSelectCompactInventory
+                    if ([[rfidPacketBufferInHexString substringWithRange:NSMakeRange(4, 4)] isEqualToString:@"51E2"] &&
+                        [[rfidPacketBufferInHexString substringWithRange:NSMakeRange(8, 4)] isEqualToString:@"10A6"]) {
+                        NSLog(@"[decodePacketsInBufferAsync] SCSLRFIDStartSelectCompactInventory command response (10A6) recieved: %@", rfidPacketBufferInHexString);
+                        self.lastMacErrorCode=0x0000;
+                        //return packet directly to the API for decoding
+                        [cmdRespQueue enqObject:packet];
+                        [rfidPacketBuffer setLength:0];
+                        continue;
+                    }
+                    
                     //Opeation command - SCSLRFIDReadMB
                     if ([[rfidPacketBufferInHexString substringWithRange:NSMakeRange(4, 4)] isEqualToString:@"51E2"] &&
                         [[rfidPacketBufferInHexString substringWithRange:NSMakeRange(8, 4)] isEqualToString:@"10B1"]) {
