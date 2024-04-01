@@ -304,13 +304,21 @@
 }
 
 + (void) setConfigurationsForTags {
+    //LED tag is disabled by default
+    [self setConfigurationsForTags:FALSE];
+}
+
++ (void) setConfigurationsForTags:(BOOL) isLEDEnabled {
 
     if ([CSLRfidAppEngine sharedAppEngine].reader.readerModelNumber==CS108 ||
         [CSLRfidAppEngine sharedAppEngine].reader.readerModelNumber==CS463)  {
         //set inventory configurations
         //for multiplebank inventory
         Byte tagRead=0;
-        if ([CSLRfidAppEngine sharedAppEngine].settings.isMultibank1Enabled && [CSLRfidAppEngine sharedAppEngine].settings.isMultibank2Enabled)
+        if (isLEDEnabled) {
+            tagRead=1;
+        }
+        else if ([CSLRfidAppEngine sharedAppEngine].settings.isMultibank1Enabled && [CSLRfidAppEngine sharedAppEngine].settings.isMultibank2Enabled)
             tagRead=2;
         else if ([CSLRfidAppEngine sharedAppEngine].settings.isMultibank1Enabled)
             tagRead=1;
@@ -332,7 +340,7 @@
         [[CSLRfidAppEngine sharedAppEngine].reader setLinkProfile:[CSLRfidAppEngine sharedAppEngine].settings.linkProfile];
         
         //prefilter
-        if ([CSLRfidAppEngine sharedAppEngine].settings.prefilterIsEnabled) {
+        if ([CSLRfidAppEngine sharedAppEngine].settings.prefilterIsEnabled || isLEDEnabled) {
             
             int maskOffset=0;
             if ([CSLRfidAppEngine sharedAppEngine].settings.prefilterBank == EPC)
@@ -346,6 +354,19 @@
                                                                     maskData:(NSData*)[CSLBleReader convertHexStringToData:[CSLRfidAppEngine sharedAppEngine].settings.prefilterMask]
                                                                   sel_action:0];
             [[CSLRfidAppEngine sharedAppEngine].reader setInventoryConfigurations:[CSLRfidAppEngine sharedAppEngine].settings.algorithm MatchRepeats:0 tagSelect:1 /* force tag_select */ disableInventory:0 tagRead:tagRead crcErrorRead:true QTMode:0 tagDelay:(tagRead ? 30 : 0) inventoryMode:(tagRead ? 0 : 1)];
+            
+            if (isLEDEnabled)  {
+                [[CSLRfidAppEngine sharedAppEngine].reader setQueryConfigurations:([CSLRfidAppEngine sharedAppEngine].settings.target == ToggleAB ? A : [CSLRfidAppEngine sharedAppEngine].settings.target) querySession:[CSLRfidAppEngine sharedAppEngine].settings.session querySelect:SL];
+                [[CSLRfidAppEngine sharedAppEngine].reader clearAllTagSelect];
+                [[CSLRfidAppEngine sharedAppEngine].reader TAGMSK_DESC_SEL:1];
+                [[CSLRfidAppEngine sharedAppEngine].reader selectTagForInventory:TID
+                                                                     maskPointer:0
+                                                                      maskLength:24
+                                                                        maskData:[CSLBleReader convertHexStringToData:@"E201E2"]
+                                                                      sel_action:0];
+                [[CSLRfidAppEngine sharedAppEngine].reader setInventoryConfigurations:[CSLRfidAppEngine sharedAppEngine].settings.algorithm MatchRepeats:0 tagSelect:1 /* force tag_select */ disableInventory:0 tagRead:tagRead crcErrorRead:true QTMode:0 tagDelay:(tagRead ? 30 : 0) inventoryMode:(tagRead ? 0 : 1)];
+                
+            }
         }
         else {
             [[CSLRfidAppEngine sharedAppEngine].reader clearAllTagSelect];
@@ -380,19 +401,25 @@
         
         if ([CSLRfidAppEngine sharedAppEngine].settings.FastId) {
             [[CSLRfidAppEngine sharedAppEngine].reader setQueryConfigurations:([CSLRfidAppEngine sharedAppEngine].settings.target == ToggleAB ? A : [CSLRfidAppEngine sharedAppEngine].settings.target) querySession:[CSLRfidAppEngine sharedAppEngine].settings.session querySelect:SL];
-            [[CSLRfidAppEngine sharedAppEngine].reader clearAllTagSelect];
-            [[CSLRfidAppEngine sharedAppEngine].reader TAGMSK_DESC_SEL:0];
-            [[CSLRfidAppEngine sharedAppEngine].reader selectTagForInventory:TID maskPointer:0 maskLength:24 maskData:[CSLBleReader convertHexStringToData:@"E2801100"] sel_action:0];
+//            [[CSLRfidAppEngine sharedAppEngine].reader clearAllTagSelect];
+//            [[CSLRfidAppEngine sharedAppEngine].reader TAGMSK_DESC_SEL:0];
+//            [[CSLRfidAppEngine sharedAppEngine].reader selectTagForInventory:TID maskPointer:0 maskLength:24 maskData:[CSLBleReader convertHexStringToData:@"E2801100"] sel_action:0];
             [[CSLRfidAppEngine sharedAppEngine].reader setInventoryConfigurations:[CSLRfidAppEngine sharedAppEngine].settings.algorithm MatchRepeats:0 tagSelect:1 /* force tag_select */ disableInventory:0 tagRead:tagRead crcErrorRead:true QTMode:0 tagDelay:(tagRead ? 30 : 0) inventoryMode:(tagRead ? 0 : 1)];
         }
         
-        // if multibank read is enabled
-        if (tagRead) {
-            [[CSLRfidAppEngine sharedAppEngine].reader TAGACC_BANK:[CSLRfidAppEngine sharedAppEngine].settings.multibank1 acc_bank2:[CSLRfidAppEngine sharedAppEngine].settings.multibank2];
-            [[CSLRfidAppEngine sharedAppEngine].reader TAGACC_PTR:([CSLRfidAppEngine sharedAppEngine].settings.multibank2Offset << 16) + [CSLRfidAppEngine sharedAppEngine].settings.multibank1Offset];
-            [[CSLRfidAppEngine sharedAppEngine].reader TAGACC_CNT:(tagRead ? [CSLRfidAppEngine sharedAppEngine].settings.multibank1Length : 0) secondBank:(tagRead==2 ? [CSLRfidAppEngine sharedAppEngine].settings.multibank2Length : 0)];
+        if (isLEDEnabled) {
+            [[CSLRfidAppEngine sharedAppEngine].reader TAGACC_BANK:USER acc_bank2:0];
+            [[CSLRfidAppEngine sharedAppEngine].reader TAGACC_PTR:112];
+            [[CSLRfidAppEngine sharedAppEngine].reader TAGACC_CNT:1 secondBank:0];
         }
-        
+        else {
+            // if multibank read is enabled
+            if (tagRead) {
+                [[CSLRfidAppEngine sharedAppEngine].reader TAGACC_BANK:[CSLRfidAppEngine sharedAppEngine].settings.multibank1 acc_bank2:[CSLRfidAppEngine sharedAppEngine].settings.multibank2];
+                [[CSLRfidAppEngine sharedAppEngine].reader TAGACC_PTR:([CSLRfidAppEngine sharedAppEngine].settings.multibank2Offset << 16) + [CSLRfidAppEngine sharedAppEngine].settings.multibank1Offset];
+                [[CSLRfidAppEngine sharedAppEngine].reader TAGACC_CNT:(tagRead ? [CSLRfidAppEngine sharedAppEngine].settings.multibank1Length : 0) secondBank:(tagRead==2 ? [CSLRfidAppEngine sharedAppEngine].settings.multibank2Length : 0)];
+            }
+        }
         NSLog(@"Tag focus value: %d", [CSLRfidAppEngine sharedAppEngine].settings.tagFocus);
         //Impinj Extension
         [[CSLRfidAppEngine sharedAppEngine].reader setImpinjExtension:[CSLRfidAppEngine sharedAppEngine].settings.tagFocus
@@ -408,34 +435,44 @@
     else
     {
         //for multiplebank inventory
-        [[CSLRfidAppEngine sharedAppEngine].reader E710MultibankReadConfig:0
-                                                                 IsEnabled:[CSLRfidAppEngine sharedAppEngine].settings.isMultibank1Enabled
-                                                                      Bank:[CSLRfidAppEngine sharedAppEngine].settings.multibank1
-                                                                    Offset:[CSLRfidAppEngine sharedAppEngine].settings.multibank1Offset
-                                                                    Length:[CSLRfidAppEngine sharedAppEngine].settings.multibank1Length];
+        //skip settings for LED tags
+        if (!isLEDEnabled) {
+            [[CSLRfidAppEngine sharedAppEngine].reader E710MultibankReadConfig:0
+                                                                     IsEnabled:[CSLRfidAppEngine sharedAppEngine].settings.isMultibank1Enabled
+                                                                          Bank:[CSLRfidAppEngine sharedAppEngine].settings.multibank1
+                                                                        Offset:[CSLRfidAppEngine sharedAppEngine].settings.multibank1Offset
+                                                                        Length:[CSLRfidAppEngine sharedAppEngine].settings.multibank1Length];
+            
+            [[CSLRfidAppEngine sharedAppEngine].reader E710MultibankReadConfig:1
+                                                                     IsEnabled:[CSLRfidAppEngine sharedAppEngine].settings.isMultibank2Enabled && [CSLRfidAppEngine sharedAppEngine].settings.isMultibank2Enabled
+                                                                          Bank:[CSLRfidAppEngine sharedAppEngine].settings.multibank2
+                                                                        Offset:[CSLRfidAppEngine sharedAppEngine].settings.multibank2Offset
+                                                                        Length:[CSLRfidAppEngine sharedAppEngine].settings.multibank2Length];
+        }
+        else {
+            [[CSLRfidAppEngine sharedAppEngine].reader E710MultibankReadConfig:0
+                                                                     IsEnabled:TRUE
+                                                                          Bank:USER
+                                                                        Offset:112
+                                                                        Length:1];
+            
+            [[CSLRfidAppEngine sharedAppEngine].reader E710MultibankReadConfig:1
+                                                                     IsEnabled:FALSE
+                                                                          Bank:0
+                                                                        Offset:0
+                                                                        Length:0];
+        }
         
-        [[CSLRfidAppEngine sharedAppEngine].reader E710MultibankReadConfig:1
-                                                                 IsEnabled:[CSLRfidAppEngine sharedAppEngine].settings.isMultibank2Enabled && [CSLRfidAppEngine sharedAppEngine].settings.isMultibank2Enabled 
-                                                                      Bank:[CSLRfidAppEngine sharedAppEngine].settings.multibank2
-                                                                    Offset:[CSLRfidAppEngine sharedAppEngine].settings.multibank2Offset
-                                                                    Length:[CSLRfidAppEngine sharedAppEngine].settings.multibank2Length];
+        //enforce link profile 244 for LED tags
+        if (isLEDEnabled)
+            [[CSLRfidAppEngine sharedAppEngine].reader setLinkProfile:MID_244];
+        else
+            [[CSLRfidAppEngine sharedAppEngine].reader setLinkProfile:[CSLRfidAppEngine sharedAppEngine].settings.linkProfile];
         
-        [[CSLRfidAppEngine sharedAppEngine].reader setLinkProfile:[CSLRfidAppEngine sharedAppEngine].settings.linkProfile];
         [[CSLRfidAppEngine sharedAppEngine].reader E710SetDuplicateEliminationRollingWindow:[CSLRfidAppEngine sharedAppEngine].settings.DuplicateEliminiationWindow];
         [[CSLRfidAppEngine sharedAppEngine].reader E710SetIntraPacketDelay:4];
         [[CSLRfidAppEngine sharedAppEngine].reader E710SetEventPacketUplinkEnable:TRUE InventoryEnd:FALSE CrcError:TRUE TagReadRate:TRUE];
         
-        //fast id
-//        if ([CSLRfidAppEngine sharedAppEngine].settings.FastId) {
-//            [[CSLRfidAppEngine sharedAppEngine].reader E710SelectTag:0
-//                       maskBank:TID
-//                    maskPointer:0
-//                     maskLength:24
-//                       maskData:[CSLBleReader convertHexStringToData:@"E2801100"]
-//                         target:4
-//                         action:0
-//                postConfigDelay:0];
-//        }
         
         //prefilter
         if ([CSLRfidAppEngine sharedAppEngine].settings.prefilterIsEnabled) {
@@ -453,7 +490,19 @@
                 postConfigDelay:0];
             NSLog(@"selection: %d maskbank: %d mask pointer: %d mask length: %lu mask Data: %@ ", 0 + ([CSLRfidAppEngine sharedAppEngine].settings.FastId ? 1 : 0), [CSLRfidAppEngine sharedAppEngine].settings.prefilterBank, [CSLRfidAppEngine sharedAppEngine].settings.prefilterOffset + maskOffset, (unsigned long)([[CSLRfidAppEngine sharedAppEngine].settings.prefilterMask length] * 4), [CSLBleReader convertHexStringToData:[CSLRfidAppEngine sharedAppEngine].settings.prefilterMask]);
         }
-
+        
+        //LED Tags
+        if (isLEDEnabled) {
+            [[CSLRfidAppEngine sharedAppEngine].reader E710SelectTag:1
+                                                            maskBank:TID
+                                                         maskPointer:0
+                                                          maskLength:24
+                                                            maskData:[CSLBleReader convertHexStringToData:@"E201E2"]
+                                                              target:4
+                                                              action:0
+                                                     postConfigDelay:0];
+            NSLog(@"LED tag CS6861 flashing is enabled");
+        }
     }
     
 }

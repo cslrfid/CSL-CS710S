@@ -1811,12 +1811,17 @@
 }
 
 - (BOOL) selectTagForSearch:(MEMORYBANK)maskbank maskPointer:(UInt16)ptr maskLength:(UInt32)length maskData:(NSData*)mask {
+    return [self selectTagForSearch:maskbank maskPointer:ptr maskLength:length maskData:mask ledTags:FALSE];
+}
+
+- (BOOL) selectTagForSearch:(MEMORYBANK)maskbank maskPointer:(UInt16)ptr maskLength:(UInt32)length maskData:(NSData*)mask ledTags:(BOOL)isLEDEnabled {
     
     BOOL result=true;
     
     NSLog(@"Tag select mask in hex: %@", [CSLBleReader convertDataToHexString:mask] );
     
     //Select the desired tag
+    result=[self TAGMSK_DESC_SEL:0];
     result=[self TAGMSK_DESC_CFG:true selectTarget:4 /* SL*/ selectAction:0];
     result=[self TAGMSK_BANK:maskbank];
     result=[self TAGMSK_PTR:ptr];
@@ -1847,7 +1852,10 @@
     }
     
     //stop after 1 tag inventoried, enable tag select, compact mode
-    [self setInventoryConfigurations:FIXEDQ MatchRepeats:0 tagSelect:1 disableInventory:0 tagRead:0 crcErrorRead:1 QTMode:0 tagDelay:30 inventoryMode:0];
+    if (!isLEDEnabled)
+        [self setInventoryConfigurations:FIXEDQ MatchRepeats:0 tagSelect:1 disableInventory:0 tagRead:0 crcErrorRead:1 QTMode:0 tagDelay:30 inventoryMode:0];
+    else
+        [self setInventoryConfigurations:FIXEDQ MatchRepeats:0 tagSelect:1 /* force tag_select */ disableInventory:0 tagRead:1 crcErrorRead:true QTMode:0 tagDelay:30 inventoryMode:0];
     
     return result;
 }
@@ -2260,6 +2268,10 @@
 }
 
 - (BOOL) startTagSearch:(MEMORYBANK)mask_bank maskPointer:(UInt16)mask_pointer maskLength:(UInt32)mask_Length maskData:(NSData*)mask_data {
+    return [self startTagSearch:mask_bank maskPointer:mask_pointer maskLength:mask_Length maskData:mask_data ledTag:FALSE];
+}
+
+- (BOOL) startTagSearch:(MEMORYBANK)mask_bank maskPointer:(UInt16)mask_pointer maskLength:(UInt32)mask_Length maskData:(NSData*)mask_data ledTag:(BOOL)isLEDEnabled {
     
     if (self.readerModelNumber != CS710) {
         BOOL result=true;
@@ -2270,9 +2282,18 @@
         
         //if mask data is not nil, tag will be selected before reading
         if (mask_data != nil)
-            result=[self selectTagForSearch:mask_bank maskPointer:32 maskLength:mask_Length  maskData:mask_data];
+            result=[self selectTagForSearch:mask_bank maskPointer:32 maskLength:mask_Length  maskData:mask_data ledTags:isLEDEnabled];
         
-        result = [self sendHostCommandSearch];
+        if(isLEDEnabled) {
+            [self TAGACC_BANK:USER acc_bank2:0];
+            [self TAGACC_PTR:112];
+            [self TAGACC_CNT:1 secondBank:0];
+        }
+        
+        if (! isLEDEnabled)
+            result = [self sendHostCommandSearch];
+        else
+            return [self startInventory];
         
         //wait for the command-begin and command-end packet
         for (int i=0;i<COMMAND_TIMEOUT_5S;i++) { //receive data or time out in 5 seconds
@@ -2322,8 +2343,23 @@
                          target:4
                          action:0
                 postConfigDelay:0];
-                
-        result = [self E710SCSLRFIDStartSelectInventory];
+        
+        //LED Tags
+        if (isLEDEnabled) {
+            [self E710MultibankReadConfig:0
+                                IsEnabled:TRUE
+                                     Bank:USER
+                                   Offset:112
+                                   Length:1];
+            
+            NSLog(@"LED tag CS6861 flashing is enabled");
+        }
+        
+        if (isLEDEnabled)
+            result = [self E710StartSelectMBInventory];
+        else
+            result = [self E710StartSelectCompactInventory];
+        
         [self.delegate didInterfaceChangeConnectStatus:self]; //this will call the method for connections status chagnes.
         return result;
     }
