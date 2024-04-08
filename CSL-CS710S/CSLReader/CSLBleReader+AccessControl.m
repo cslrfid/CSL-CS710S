@@ -2060,7 +2060,7 @@
     
 }
 
-- (BOOL)E710SCSLRFIDStartSelectInventory{
+- (BOOL)StartSelectInventory{
     
     if (self.readerModelNumber != CS710) {
         NSLog(@"RFID command failed. Invalid reader");
@@ -2075,6 +2075,24 @@
         
     }
     NSLog(@"RFID Tag Search: FAILED");
+    return false;
+    
+}
+
+- (BOOL)E710SCSLRFIDAuthenticate {
+    
+    if (self.readerModelNumber != CS710) {
+        NSLog(@"RFID command failed. Invalid reader");
+        return false;
+    }
+    
+    if ([self E710SendShortOperationCommand:self CommandCode:0x10B9 timeOutInSeconds:1])
+    {
+        NSLog(@"RFID Tag authentication: OK");
+        return true;
+        
+    }
+    NSLog(@"RFID Tag authentication: FAILED");
     return false;
     
 }

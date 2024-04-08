@@ -329,6 +329,11 @@ Select EPC match mask
  @return TRUE if the operation is successful
  */
 - (BOOL)E710SCSLRFIDStartSelectInventory;
+/**
+ Short command for Impinj authentications
+ @return TRUE if the operation is successful
+ */
+- (BOOL)E710SCSLRFIDAuthenticate;
 @end
 
 NS_ASSUME_NONNULL_END

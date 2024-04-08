@@ -181,6 +181,10 @@ CSLRfidAppEngine * appEngine;
         settings.postfilterIsNotMatchMaskEnabled =[defaults boolForKey:@"postfilterIsNotMatchMaskEnabled"];
     if([defaults objectForKey:@"postfilterIsEnabled"])
         settings.postfilterIsEnabled =[defaults boolForKey:@"postfilterIsEnabled"];
+    if([defaults objectForKey:@"IasToken"])
+        settings.postfilterMask = (NSString*)[defaults stringForKey:@"IasToken"];
+    if([defaults objectForKey:@"IasTokenExpiry"])
+        settings.postfilterOffset = (int)[defaults integerForKey:@"IasTokenExpiry"];
     
 }
 -(void)saveSettingsToUserDefaults {
@@ -225,6 +229,8 @@ CSLRfidAppEngine * appEngine;
     [defaults setInteger:settings.postfilterOffset forKey:@"postfilterOffset"];
     [defaults setBool:settings.postfilterIsNotMatchMaskEnabled forKey:@"postfilterIsNotMatchMaskEnabled"];
     [defaults setBool:settings.postfilterIsEnabled forKey:@"postfilterIsEnabled"];
+    [defaults setObject:settings.IasToken forKey:@"IasToken"];
+    [defaults setInteger:settings.QValue forKey:@"IasTokenExpiry"];
     
     [defaults synchronize];
     
