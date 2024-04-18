@@ -97,6 +97,10 @@
                 self.linkProfile=RANGE_DRM;
                 break;
         }
+        
+        self.IasToken = @"";
+        self.IasTokenExpiry = 0;
+        
     }
     return self;
 }

@@ -2325,6 +2325,127 @@
     }
 }
 
+- (BOOL)setImpinjAuthentication:(UInt32)password
+                        sendRep:(Byte)sen_rep
+                      incRepLen:(Byte)inc_rep_len
+                            csi:(UInt16)csi
+                  messageLength:(UInt16)message_length
+            authenticateMessage:(NSData*)authenticate_message
+                    responseLen:(UInt16)response_len {
+    
+    if (self.readerModelNumber == CS710)
+    {
+        Byte errorCode;
+        unsigned short startAddress = 0x38A6;
+        NSData* regData = [[NSData alloc] initWithBytes:(unsigned char[]){ (password & 0xFF000000) >> 24, (password & 0x00FF0000 )>> 16, (password & 0x0000FF00) >> 8, password & 0x000000FF } length:4];
+        if (![self E710WriteRegister:self atAddr:startAddress regLength:4 forData:regData timeOutInSeconds:1 error:&errorCode])
+        {
+            NSLog(@"Write access password register failed. Error code: %d", errorCode);
+            return false;
+        }
+        
+        //Impinj authentications
+        startAddress = 0x390E;
+        regData = [[NSData alloc] initWithBytes:(unsigned char[]) { ((message_length & 0x0FC0) >> 6), 
+            ((message_length & 0x003F) << 2) + ((csi & 0x0300) >> 8),
+            (sen_rep & 0x01) + ((inc_rep_len & 0x01) << 1) + ((csi & 0x003F) << 2)}
+                                         length:3];
+        if (![self E710WriteRegister:self atAddr:startAddress regLength:3 forData:regData timeOutInSeconds:1 error:&errorCode])
+        {
+            NSLog(@"Write AuthenticateConfig register failed. Error code: %d", errorCode);
+            return false;
+        }
+        NSLog(@"RFID set AuthenticateConfig command sent: OK");
+        
+        //Authentication message
+        startAddress = 0x3912;
+        //message data: pad zero until getting 32 bytes
+        NSMutableData *paddedData = [NSMutableData dataWithData:authenticate_message];
+        [paddedData increaseLengthBy:(32 - [authenticate_message length])];
+        if (![self E710WriteRegister:self atAddr:startAddress regLength:32 forData:paddedData timeOutInSeconds:1 error:&errorCode])
+        {
+            NSLog(@"Write AuthenticateMessage register failed. Error code: %d", errorCode);
+            return false;
+        }
+        NSLog(@"RFID set AuthenticateMessage command sent: OK");
+        
+        //Authentication response length
+        startAddress = 0x3944;
+        regData = [[NSData alloc] initWithBytes:(unsigned char[]){ 0x00, 0x40 } length:2];
+        if (![self E710WriteRegister:self atAddr:startAddress regLength:2 forData:regData timeOutInSeconds:1 error:&errorCode])
+        {
+            NSLog(@"Write AuthenticateResponseLen register failed. Error code: %d", errorCode);
+            return false;
+        }
+        NSLog(@"RFID set AuthenticateResponseLen command sent: OK");
+        
+        return true;
+    }
+    else
+    {
+        @synchronized(self) {
+            if (connectStatus!=CONNECTED)
+            {
+                NSLog(@"Reader is not connected or busy. Access failure");
+                return false;
+            }
+            
+            connectStatus=BUSY;
+        }
+        [self.delegate didInterfaceChangeConnectStatus:self]; //this will call the method for connections status chagnes.
+        [self.recvQueue removeAllObjects];
+        [cmdRespQueue removeAllObjects];
+        
+        //Initialize data
+        CSLBlePacket* packet= [[CSLBlePacket alloc] init];
+        CSLBlePacket * recvPacket;
+        
+        //Set antenna power (ANT_PORT_POWER) command reg_addr=0x0706
+        unsigned int power=(unsigned int)(3000 / 0.1);
+        unsigned char ANT_PORT_POWER[] = {0x80, 0x02, 0x70, 0x01, 0x06, 0x07, power & 0x000000FF, (power & 0x0000FF00) >> 8, (power & 0x00FF0000) >> 16, (power & 0xFF000000) >> 24};
+        packet.prefix=0xA7;
+        packet.connection = Bluetooth;
+        packet.payloadLength=0x0A;
+        packet.deviceId=RFID;
+        packet.Reserve=0x82;
+        packet.direction=Downlink;
+        packet.crc1=0;
+        packet.crc2=0;
+        packet.payload=[NSData dataWithBytes:ANT_PORT_POWER length:sizeof(ANT_PORT_POWER)];
+        
+        NSLog(@"BLE packet sending: %@", [packet getPacketInHexString]);
+        [self sendPackets:packet];
+        
+        for (int i=0;i<COMMAND_TIMEOUT_5S;i++) { //receive data or time out in 5 seconds
+            if([cmdRespQueue count] != 0)
+                break;
+            [NSThread sleepForTimeInterval:0.001f];
+        }
+        
+        if ([cmdRespQueue count] != 0) {
+            recvPacket=((CSLBlePacket *)[cmdRespQueue deqObject]);
+            if (memcmp([recvPacket.payload bytes], ANT_PORT_POWER, 2) == 0 && ((Byte *)[recvPacket.payload bytes])[2] == 0x00)
+                NSLog(@"Set antenna power command sent: OK");
+            else {
+                NSLog(@"Set antenna power command sent: FAILED");
+                connectStatus=CONNECTED;
+                [self.delegate didInterfaceChangeConnectStatus:self]; //this will call the method for connections status chagnes.
+                return false;
+            }
+        }
+        else {
+            NSLog(@"Command response failure.");
+            connectStatus=CONNECTED;
+            [self.delegate didInterfaceChangeConnectStatus:self]; //this will call the method for connections status chagnes.
+            return false;
+            
+        }
+        connectStatus=CONNECTED;
+        [self.delegate didInterfaceChangeConnectStatus:self]; //this will call the method for connections status chagnes.
+        return true;
+    }
+}
+
 - (BOOL)E710SetRfMode:(Byte)port_number
              mode:(NSUInteger)mode_id {
 
@@ -5099,6 +5220,18 @@
                     if ([[rfidPacketBufferInHexString substringWithRange:NSMakeRange(4, 4)] isEqualToString:@"51E2"] &&
                         [[rfidPacketBufferInHexString substringWithRange:NSMakeRange(8, 4)] isEqualToString:@"10B8"]) {
                         NSLog(@"[decodePacketsInBufferAsync] SCSLRFIDKill command response (10B8) recieved: %@", rfidPacketBufferInHexString);
+                        self.lastMacErrorCode=0x0000;
+                        AccessTagResponse=NULL;
+                        //return packet directly to the API for decoding
+                        [cmdRespQueue enqObject:packet];
+                        [rfidPacketBuffer setLength:0];
+                        continue;
+                    }
+                    
+                    //Opeation command - SCSLRFIDAuthenticate
+                    if ([[rfidPacketBufferInHexString substringWithRange:NSMakeRange(4, 4)] isEqualToString:@"51E2"] &&
+                        [[rfidPacketBufferInHexString substringWithRange:NSMakeRange(8, 4)] isEqualToString:@"10B9"]) {
+                        NSLog(@"[decodePacketsInBufferAsync] SCSLRFIDAuthenticate command response (10B9) recieved: %@", rfidPacketBufferInHexString);
                         self.lastMacErrorCode=0x0000;
                         AccessTagResponse=NULL;
                         //return packet directly to the API for decoding

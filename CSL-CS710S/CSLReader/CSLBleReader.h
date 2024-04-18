@@ -274,6 +274,18 @@ Write Impinj Extensions register
 */
 - (BOOL)setImpinjExtension:(Byte)tag_Focus fastId:(Byte)fast_id blockWriteMode:(Byte)blockwrite_mode;
 /**
+Write Impinj authentication registers
+ @param password access password
+ @param sen_rep SenRep
+ @param inc_rep_len incRepLen
+ @param csi csi
+ @param message_length messageLength
+ @param authenticate_message authenticateMessage
+ @param response_len responseLen
+@return TRUE if the operation is successful
+*/
+- (BOOL)setImpinjAuthentication:(UInt32)password sendRep:(Byte)sen_rep incRepLen:(Byte)inc_rep_len csi:(UInt16)csi messageLength:(UInt16)message_length authenticateMessage:(NSData*)authenticate_message responseLen:(UInt16)response_len;
+/**
  Enable/disable barcode reader
  @param enable TRUE/FALSE for turning on/off the barcode reader module
  @return TRUE if the operation is successful

@@ -153,6 +153,16 @@ Select EPC match mask
  */
 - (BOOL) selectTagForSearch:(MEMORYBANK)maskbank maskPointer:(UInt16)ptr maskLength:(UInt32)length maskData:(NSData*)mask;
 /**
+ Select tag before tag access (search) operation for LED tags
+ @param maskbank Mask bank to be used for tag selection
+ @param ptr Pointer to the start of the memory address, to be expressed by bits
+ @param length Size of the mask expressed in number of bits
+ @param mask mask value
+ @param isLEDEnabled flash LED during tag access
+ @return TRUE if the operation is successful
+ */
+- (BOOL) selectTagForSearch:(MEMORYBANK)maskbank maskPointer:(UInt16)ptr maskLength:(UInt32)length maskData:(NSData*)mask ledTags:(BOOL)isLEDEnabled;
+/**
  Send singular tag read command
  @param bank Bank to be read from
  @param offset Pointer to the start of the memory address, by the number of words
@@ -257,6 +267,16 @@ Select EPC match mask
  */
 - (BOOL) startTagSearch:(MEMORYBANK)mask_bank maskPointer:(UInt16)mask_pointer maskLength:(UInt32)mask_Length maskData:(NSData*)mask_data;
 /**
+ Send singular tag search command (LED tags)
+ @param mask_bank Mask bank to be used for tag selection
+ @param mask_pointer Pointer to the start of the memory address, to be expressed by bits
+ @param mask_Length Size of the mask expressed in number of bits
+ @param mask_data mask value
+ @param isLEDEnabled  flash LED during tag search
+ @return TRUE if the operation is successful
+ */
+- (BOOL) startTagSearch:(MEMORYBANK)mask_bank maskPointer:(UInt16)mask_pointer maskLength:(UInt32)mask_Length maskData:(NSData*)mask_data ledTag:(BOOL)isLEDEnabled;
+/**
  Stop singular tag search
  @return TRUE if the operation is successful
  */
@@ -309,6 +329,11 @@ Select EPC match mask
  @return TRUE if the operation is successful
  */
 - (BOOL)E710SCSLRFIDStartSelectInventory;
+/**
+ Short command for Impinj authentications
+ @return TRUE if the operation is successful
+ */
+- (BOOL)E710SCSLRFIDAuthenticate;
 @end
 
 NS_ASSUME_NONNULL_END

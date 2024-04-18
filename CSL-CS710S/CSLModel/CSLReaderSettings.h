@@ -94,6 +94,13 @@
 ///Post-filter - enabled
 @property (assign) BOOL postfilterIsEnabled;
 
+///Impinj IAS URL
+@property NSString* IasUrl;
+///Impinj IAS token
+@property NSString* IasToken;
+///Impinj IAS token expiry
+@property (assign) int IasTokenExpiry;
+
 - (id) init;
 - (id)initWithReaderType:(READERTYPE) type;
 
