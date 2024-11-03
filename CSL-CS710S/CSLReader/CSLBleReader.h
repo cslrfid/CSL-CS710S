@@ -186,6 +186,13 @@ Insertion/update of tag data is based on binary searching algorithm for better e
  */
 - (BOOL)E710GetCountryEnum:(CSLBleInterface*)intf forData:(UInt32*)data;
 /**
+ Get current frequency index of reader
+ @param intf CSLBleInterface that references to the current reader instance
+ @param data UInt32 that holds the value of the data address
+ @return TRUE if the operation is successful
+ */
+- (BOOL)E710GetFrequencyChannelIndex:(CSLBleInterface*)intf forData:(UInt32*)data;
+/**
  Read reigster  data that contains product-specific information such as country code, antenna version and frequency channel information
  @param intf CSLBleInterface that references to the current reader instance
  @param addr Address of the memory location
