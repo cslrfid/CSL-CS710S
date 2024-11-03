@@ -11,6 +11,7 @@
 {
     NSArray* FCCTableOfFreq;
     NSArray* AUTableOfFreq;
+    NSArray* AU2TableOfFreq;
     NSArray* CNTableOfFreq;
     NSArray* ETSITableOfFreq;
     NSArray* INTableOfFreq;
@@ -38,6 +39,9 @@
     NSArray* VNTableOfFreq;
     NSArray* JP4CHTableOfFreq;
     NSArray* JP6CHTableOfFreq;
+    NSArray* ALBTableOfFreq;
+    NSArray* ALGTableOfFreq;
+    NSArray* CHILETableOfFreq;    //Chile
     
     NSArray* FCCFreqValues;
     NSArray* AUFreqValues;
@@ -98,8 +102,6 @@
     NSArray* VNFreqIndex;
     NSArray* JP4CHFreqIndex;
     NSArray* JP6CHFreqIndex;
-    
-    NSArray* CountryEnumToHoppingStatus;
 }
 
 -(id)init {
@@ -123,22 +125,29 @@
     return self;
 }
 
--(id)initWithOEMData:(UInt32)countryCode specialCountryVerison:(UInt32)special_country FreqModFlag:(UInt32)freq_mod_flag ModelCode:(UInt32)model_code CountryEnum:(UInt16)country_enum {
+-(id)initWithOEMDataForCS710S:(UInt32)countryCode specialCountryVerison:(UInt32)special_country FreqModFlag:(UInt32)freq_mod_flag ModelCode:(UInt32)model_code {
     if (self = [super init])  {
         //set default values
         _CountryCode=countryCode;
         _SpecialCountryVerison=special_country;
         _FreqModFlag=freq_mod_flag;
         _ModelCode=model_code;
-        [self generateTableOfFreq];
+        [self generateTableOfFreqForCountryEnum];
         [self generateCountryEnumToHoppingStatus];
-        _isFixed=[[CountryEnumToHoppingStatus objectAtIndex:country_enum] unsignedIntValue];
     }
     return self;
 }
 
+-(int)GetCountryEnumByCountryName:(NSString*)country_name {
+    for (int i = 0 ; i < [self.AllRegionList count] ; i++) {
+        if ([self.AllRegionList[i] isEqualToString:country_name])
+            return i;
+    }
+    return 0;
+}
+
 -(void)generateCountryEnumToHoppingStatus {
-    CountryEnumToHoppingStatus=[NSArray arrayWithObjects:[NSNumber numberWithUnsignedInt:0], [NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:0],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],
+    self.CountryEnumToHoppingStatus=[NSArray arrayWithObjects:[NSNumber numberWithUnsignedInt:0], [NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:0],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],
                                 [NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:0],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:0],[NSNumber numberWithUnsignedInt:0],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],
                                 [NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:0],
                                 [NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],[NSNumber numberWithUnsignedInt:1],
@@ -263,6 +272,376 @@
     }
     
 }
+
+
+-(void)generateRegionListForCountryEnum {
+    
+    self.RegionList = [[NSMutableArray alloc] init];
+    self.AllRegionList = [[NSMutableArray alloc] init];
+
+    //Geneate master region list based by country enum
+    [self.AllRegionList addObject:@"UNDEFINED"];
+    [self.AllRegionList addObject:@"Albania1"];
+    [self.AllRegionList addObject:@"Albania2"];
+    [self.AllRegionList addObject:@"Algeria1"];
+    [self.AllRegionList addObject:@"Algeria2"];
+    [self.AllRegionList addObject:@"Algeria3"];
+    [self.AllRegionList addObject:@"Algeria4"];
+    [self.AllRegionList addObject:@"Argentina"];
+    [self.AllRegionList addObject:@"Armenia"];
+    [self.AllRegionList addObject:@"Australia1"];
+    [self.AllRegionList addObject:@"Australia2"];
+    [self.AllRegionList addObject:@"Austria1"];
+    [self.AllRegionList addObject:@"Austria2"];
+    [self.AllRegionList addObject:@"Azerbaijan"];
+    [self.AllRegionList addObject:@"Bahrain"];
+    [self.AllRegionList addObject:@"Bangladesh"];
+    [self.AllRegionList addObject:@"Belarus"];
+    [self.AllRegionList addObject:@"Belgium1"];
+    [self.AllRegionList addObject:@"Belgium2"];
+    [self.AllRegionList addObject:@"Bolivia"];
+    [self.AllRegionList addObject:@"Bosnia"];
+    [self.AllRegionList addObject:@"Botswana"];
+    [self.AllRegionList addObject:@"Brazil1"];
+    [self.AllRegionList addObject:@"Brazil2"];
+    [self.AllRegionList addObject:@"Brunei1"];
+    [self.AllRegionList addObject:@"Brunei2"];
+    [self.AllRegionList addObject:@"Bulgaria1"];
+    [self.AllRegionList addObject:@"Bulgaria2"];
+    [self.AllRegionList addObject:@"Cambodia"];
+    [self.AllRegionList addObject:@"Cameroon"];
+    [self.AllRegionList addObject:@"Canada"];
+    [self.AllRegionList addObject:@"Chile1"];
+    [self.AllRegionList addObject:@"Chile2"];
+    [self.AllRegionList addObject:@"Chile3"];
+    [self.AllRegionList addObject:@"China"];
+    [self.AllRegionList addObject:@"Colombia"];
+    [self.AllRegionList addObject:@"Congo"];
+    [self.AllRegionList addObject:@"CostaRica"];
+    [self.AllRegionList addObject:@"Cotedlvoire"];
+    [self.AllRegionList addObject:@"Croatia"];
+    [self.AllRegionList addObject:@"Cuba"];
+    [self.AllRegionList addObject:@"Cyprus1"];
+    [self.AllRegionList addObject:@"Cyprus2"];
+    [self.AllRegionList addObject:@"Czech1"];
+    [self.AllRegionList addObject:@"Czech2"];
+    [self.AllRegionList addObject:@"Denmark1"];
+    [self.AllRegionList addObject:@"Denmark2"];
+    [self.AllRegionList addObject:@"Dominican"];
+    [self.AllRegionList addObject:@"Ecuador"];
+    [self.AllRegionList addObject:@"Egypt"];
+    [self.AllRegionList addObject:@"ElSalvador"];
+    [self.AllRegionList addObject:@"Estonia"];
+    [self.AllRegionList addObject:@"Finland1"];
+    [self.AllRegionList addObject:@"Finland2"];
+    [self.AllRegionList addObject:@"France"];
+    [self.AllRegionList addObject:@"Georgia"];
+    [self.AllRegionList addObject:@"Germany"];
+    [self.AllRegionList addObject:@"Ghana"];
+    [self.AllRegionList addObject:@"Greece"];
+    [self.AllRegionList addObject:@"Guatemala"];
+    [self.AllRegionList addObject:@"HongKong1"];
+    [self.AllRegionList addObject:@"HongKong2"];
+    [self.AllRegionList addObject:@"Hungary1"];
+    [self.AllRegionList addObject:@"Hungary2"];
+    [self.AllRegionList addObject:@"Iceland"];
+    [self.AllRegionList addObject:@"India"];
+    [self.AllRegionList addObject:@"Indonesia"];
+    [self.AllRegionList addObject:@"Iran"];
+    [self.AllRegionList addObject:@"Ireland1"];
+    [self.AllRegionList addObject:@"Ireland2"];
+    [self.AllRegionList addObject:@"Israel"];
+    [self.AllRegionList addObject:@"Italy"];
+    [self.AllRegionList addObject:@"Jamaica"];
+    [self.AllRegionList addObject:@"Japan4"];
+    [self.AllRegionList addObject:@"Japan6"];
+    [self.AllRegionList addObject:@"Jordan"];
+    [self.AllRegionList addObject:@"Kazakhstan"];
+    [self.AllRegionList addObject:@"Kenya"];
+    [self.AllRegionList addObject:@"Korea"];
+    [self.AllRegionList addObject:@"KoreaDPR"];
+    [self.AllRegionList addObject:@"Kuwait"];
+    [self.AllRegionList addObject:@"Kyrgyz"];
+    [self.AllRegionList addObject:@"Latvia"];
+    [self.AllRegionList addObject:@"Lebanon"];
+    [self.AllRegionList addObject:@"Libya"];
+    [self.AllRegionList addObject:@"Liechtenstein1"];
+    [self.AllRegionList addObject:@"Liechtenstein2"];
+    [self.AllRegionList addObject:@"Lithuania1"];
+    [self.AllRegionList addObject:@"Lithuania2"];
+    [self.AllRegionList addObject:@"Luxembourg1"];
+    [self.AllRegionList addObject:@"Luxembourg2"];
+    [self.AllRegionList addObject:@"Macao"];
+    [self.AllRegionList addObject:@"Macedonia"];
+    [self.AllRegionList addObject:@"Malaysia"];
+    [self.AllRegionList addObject:@"Malta1"];
+    [self.AllRegionList addObject:@"Malta2"];
+    [self.AllRegionList addObject:@"Mauritius"];
+    [self.AllRegionList addObject:@"Mexico"];
+    [self.AllRegionList addObject:@"Moldova1"];
+    [self.AllRegionList addObject:@"Moldova2"];
+    [self.AllRegionList addObject:@"Mongolia"];
+    [self.AllRegionList addObject:@"Montenegro"];
+    [self.AllRegionList addObject:@"Morocco"];
+    [self.AllRegionList addObject:@"Netherlands"];
+    [self.AllRegionList addObject:@"NewZealand1"];
+    [self.AllRegionList addObject:@"NewZealand2"];
+    [self.AllRegionList addObject:@"Nicaragua"];
+    [self.AllRegionList addObject:@"Nigeria"];
+    [self.AllRegionList addObject:@"Norway1"];
+    [self.AllRegionList addObject:@"Norway2"];
+    [self.AllRegionList addObject:@"Oman"];
+    [self.AllRegionList addObject:@"Pakistan"];
+    [self.AllRegionList addObject:@"Panama"];
+    [self.AllRegionList addObject:@"Paraguay"];
+    [self.AllRegionList addObject:@"Peru"];
+    [self.AllRegionList addObject:@"Philippines"];
+    [self.AllRegionList addObject:@"Poland"];
+    [self.AllRegionList addObject:@"Portugal"];
+    [self.AllRegionList addObject:@"Romania"];
+    [self.AllRegionList addObject:@"Russia1"];
+    [self.AllRegionList addObject:@"Russia3"];
+    [self.AllRegionList addObject:@"Senegal"];
+    [self.AllRegionList addObject:@"Serbia"];
+    [self.AllRegionList addObject:@"Singapore1"];
+    [self.AllRegionList addObject:@"Singapore2"];
+    [self.AllRegionList addObject:@"Slovak1"];
+    [self.AllRegionList addObject:@"Slovak2"];
+    [self.AllRegionList addObject:@"Slovenia1"];
+    [self.AllRegionList addObject:@"Solvenia2"];
+    [self.AllRegionList addObject:@"SAfrica1"];
+    [self.AllRegionList addObject:@"SAfrica2"];
+    [self.AllRegionList addObject:@"Spain"];
+    [self.AllRegionList addObject:@"SriLanka"];
+    [self.AllRegionList addObject:@"Sudan"];
+    [self.AllRegionList addObject:@"Sweden1"];
+    [self.AllRegionList addObject:@"Sweden2"];
+    [self.AllRegionList addObject:@"Switzerland1"];
+    [self.AllRegionList addObject:@"Switzerland2"];
+    [self.AllRegionList addObject:@"Syria"];
+    [self.AllRegionList addObject:@"Taiwan1"];
+    [self.AllRegionList addObject:@"Taiwan2"];
+    [self.AllRegionList addObject:@"Tajikistan"];
+    [self.AllRegionList addObject:@"Tanzania"];
+    [self.AllRegionList addObject:@"Thailand"];
+    [self.AllRegionList addObject:@"Trinidad"];
+    [self.AllRegionList addObject:@"Tunisia"];
+    [self.AllRegionList addObject:@"Turkey"];
+    [self.AllRegionList addObject:@"Turkmenistan"];
+    [self.AllRegionList addObject:@"Uganda"];
+    [self.AllRegionList addObject:@"Ukraine"];
+    [self.AllRegionList addObject:@"UAE"];
+    [self.AllRegionList addObject:@"UK1"];
+    [self.AllRegionList addObject:@"UK2"];
+    [self.AllRegionList addObject:@"USA"];
+    [self.AllRegionList addObject:@"Uruguay"];
+    [self.AllRegionList addObject:@"Venezuela"];
+    [self.AllRegionList addObject:@"Vietnam1"];
+    [self.AllRegionList addObject:@"Vietnam2"];
+    [self.AllRegionList addObject:@"Yemen"];
+    [self.AllRegionList addObject:@"Zimbabwe"];
+        
+    //generate region list beased on country code of OEM data
+    switch (self.CountryCode)
+    {
+        //-1 CE
+        case 1:
+            [self.RegionList addObject:@"Albania1"];
+            [self.RegionList addObject:@"Algeria1"];
+            [self.RegionList addObject:@"Algeria2"];
+            [self.RegionList addObject:@"Armenia"];
+            [self.RegionList addObject:@"Austria1"];
+            [self.RegionList addObject:@"Azerbaijan"];
+            [self.RegionList addObject:@"Bahrain"];
+            [self.RegionList addObject:@"Bangladesh"];
+            [self.RegionList addObject:@"Belarus"];
+            [self.RegionList addObject:@"Belgium1"];
+            [self.RegionList addObject:@"Bosnia"];
+            [self.RegionList addObject:@"Botswana"];
+            [self.RegionList addObject:@"Brunei1"];
+            [self.RegionList addObject:@"Bulgaria1"];
+            [self.RegionList addObject:@"Cameroon"];
+            [self.RegionList addObject:@"Congo"];
+            [self.RegionList addObject:@"Cotedlvoire"];
+            [self.RegionList addObject:@"Croatia"];
+            [self.RegionList addObject:@"Cyprus1"];
+            [self.RegionList addObject:@"Czech1"];
+            [self.RegionList addObject:@"Denmark1"];
+            [self.RegionList addObject:@"Egypt"];
+            [self.RegionList addObject:@"Estonia"];
+            [self.RegionList addObject:@"Finland1"];
+            [self.RegionList addObject:@"France"];
+            [self.RegionList addObject:@"Georgia"];
+            [self.RegionList addObject:@"Germany"];
+            [self.RegionList addObject:@"Ghana"];
+            [self.RegionList addObject:@"Greece"];
+            [self.RegionList addObject:@"HongKong1"];
+            [self.RegionList addObject:@"Hungary1"];
+            [self.RegionList addObject:@"Iceland"];
+            [self.RegionList addObject:@"India"];
+            [self.RegionList addObject:@"Iran"];
+            [self.RegionList addObject:@"Ireland1"];
+            [self.RegionList addObject:@"Italy"];
+            [self.RegionList addObject:@"Jordan"];
+            [self.RegionList addObject:@"Kazakhstan"];
+            [self.RegionList addObject:@"Kenya"];
+            [self.RegionList addObject:@"Kuwait"];
+            [self.RegionList addObject:@"Kyrgyz"];
+            [self.RegionList addObject:@"Latvia"];
+            [self.RegionList addObject:@"Lebanon"];
+            [self.RegionList addObject:@"Libya"];
+            [self.RegionList addObject:@"Liechtenstein1"];
+            [self.RegionList addObject:@"Lithuania1"];
+            [self.RegionList addObject:@"Luxembourg1"];
+            [self.RegionList addObject:@"Macedonia"];
+            [self.RegionList addObject:@"Malta1"];
+            [self.RegionList addObject:@"Mauritius"];
+            [self.RegionList addObject:@"Moldova1"];
+            [self.RegionList addObject:@"Montenegro"];
+            [self.RegionList addObject:@"Morocco"];
+            [self.RegionList addObject:@"Netherlands"];
+            [self.RegionList addObject:@"NewZealand1"];
+            [self.RegionList addObject:@"Nigeria"];
+            [self.RegionList addObject:@"Norway1"];
+            [self.RegionList addObject:@"Oman"];
+            [self.RegionList addObject:@"Pakistan"];
+            [self.RegionList addObject:@"Poland"];
+            [self.RegionList addObject:@"Portugal"];
+            [self.RegionList addObject:@"Romania"];
+            [self.RegionList addObject:@"Russia1"];
+            [self.RegionList addObject:@"Senegal"];
+            [self.RegionList addObject:@"Serbia"];
+            [self.RegionList addObject:@"Singapore1"];
+            [self.RegionList addObject:@"Slovak1"];
+            [self.RegionList addObject:@"Slovenia1"];
+            [self.RegionList addObject:@"SAfrica1"];
+            [self.RegionList addObject:@"Spain"];
+            [self.RegionList addObject:@"SriLanka"];
+            [self.RegionList addObject:@"Sudan"];
+            [self.RegionList addObject:@"Sweden1"];
+            [self.RegionList addObject:@"Switzerland1"];
+            [self.RegionList addObject:@"Syria"];
+            [self.RegionList addObject:@"Tajikistan"];
+            [self.RegionList addObject:@"Tanzania"];
+            [self.RegionList addObject:@"Tunisia"];
+            [self.RegionList addObject:@"Turkey"];
+            [self.RegionList addObject:@"Turkmenistan"];
+            [self.RegionList addObject:@"Uganda"];
+            [self.RegionList addObject:@"Ukraine"];
+            [self.RegionList addObject:@"UAE"];
+            [self.RegionList addObject:@"UK1"];
+            [self.RegionList addObject:@"Vietnam1"];
+            [self.RegionList addObject:@"Yemen"];
+            [self.RegionList addObject:@"Zimbabwe"];
+            break;
+        case 2:
+            switch (self.SpecialCountryVerison)
+            {
+                case 0x2A2A5257:    //-2 RW
+                    [self.RegionList addObject:@"Albania2"];
+                    [self.RegionList addObject:@"Argentina"];
+                    [self.RegionList addObject:@"Brazil1"];
+                    [self.RegionList addObject:@"Brazil2"];
+                    [self.RegionList addObject:@"Chile1"];
+                    [self.RegionList addObject:@"Chile2"];
+                    [self.RegionList addObject:@"Chile3"];
+                    [self.RegionList addObject:@"Colombia"];
+                    [self.RegionList addObject:@"CostaRica"];
+                    [self.RegionList addObject:@"Cuba"];
+                    [self.RegionList addObject:@"Dominican"];
+                    [self.RegionList addObject:@"Ecuador"];
+                    [self.RegionList addObject:@"ElSalvador"];
+                    [self.RegionList addObject:@"Guatemala"];
+                    [self.RegionList addObject:@"Jamaica"];
+                    [self.RegionList addObject:@"Nicaragua"];
+                    [self.RegionList addObject:@"Panama"];
+                    [self.RegionList addObject:@"Paraguay"];
+                    [self.RegionList addObject:@"Peru"];
+                    [self.RegionList addObject:@"Philippines"];
+                    [self.RegionList addObject:@"Thailand"];
+                    [self.RegionList addObject:@"Trinidad"];
+                    [self.RegionList addObject:@"Uruguay"];
+                    [self.RegionList addObject:@"Venezuela"];
+                    break;
+                case 0x4F464341:   //-2 OFCA
+                    [self.RegionList addObject:@"HongKong2"];
+                    break;
+                case 0x2A2A4153:    //-2 AS
+                    [self.RegionList addObject:@"Australia1"];
+                    [self.RegionList addObject:@"Australia2"];
+                    break;
+                case 0x2A2A4E5A:    //-2 NZ
+                    [self.RegionList addObject:@"NewZealand2"];
+                    break;
+                case 0x2A2A5347:    //-2 SG
+                    [self.RegionList addObject:@"Singapore2"];
+                    break;
+                //-2 FCC
+                default:
+                    [self.RegionList addObject:@"Bolivia"];
+                    [self.RegionList addObject:@"Canada"];
+                    [self.RegionList addObject:@"Mexico"];
+                    [self.RegionList addObject:@"USA"];
+                    break;
+            }
+            break;
+        case 4:     //Taiwan NCC
+            [self.RegionList addObject:@"Taiwan1"];
+            [self.RegionList addObject:@"Taiwan2"];
+            break;
+        case 6:
+            [self.RegionList addObject:@"Korea"];
+            break;
+        case 7:
+            [self.RegionList addObject:@"Algeria4"];
+            [self.RegionList addObject:@"Brunei2"];
+            [self.RegionList addObject:@"Cambodia"];
+            [self.RegionList addObject:@"China"];
+            [self.RegionList addObject:@"Indonesia"];
+            [self.RegionList addObject:@"KoreaDPR"];
+            [self.RegionList addObject:@"Macao"];
+            [self.RegionList addObject:@"Malaysia"];
+            [self.RegionList addObject:@"Mongolia"];
+            [self.RegionList addObject:@"Vietnam2"];
+            break;
+        case 8:
+            if (self.SpecialCountryVerison == 0x2A4A5036) {
+                [self.RegionList addObject:@"Japan6"];
+            }
+            else {
+                [self.RegionList addObject:@"Japan4"];
+            }
+            break;
+        case 9:
+            [self.RegionList addObject:@"Algeria3"];
+            [self.RegionList addObject:@"Austria2"];
+            [self.RegionList addObject:@"Belgium2"];
+            [self.RegionList addObject:@"Bulgaria2"];
+            [self.RegionList addObject:@"Cyprus2"];
+            [self.RegionList addObject:@"Czech2"];
+            [self.RegionList addObject:@"Denmark2"];
+            [self.RegionList addObject:@"Finland2"];
+            [self.RegionList addObject:@"Hungary2"];
+            [self.RegionList addObject:@"Ireland2"];
+            [self.RegionList addObject:@"Israel"];
+            [self.RegionList addObject:@"Liechtenstein2"];
+            [self.RegionList addObject:@"Lithuania2"];
+            [self.RegionList addObject:@"Luxembourg2"];
+            [self.RegionList addObject:@"Malta2"];
+            [self.RegionList addObject:@"Moldova2"];
+            [self.RegionList addObject:@"Norway2"];
+            [self.RegionList addObject:@"Russia3"];
+            [self.RegionList addObject:@"Slovak2"];
+            [self.RegionList addObject:@"Solvenia2"];
+            [self.RegionList addObject:@"SAfrica2"];
+            [self.RegionList addObject:@"Sweden2"];
+            [self.RegionList addObject:@"Switzerland2"];
+            [self.RegionList addObject:@"UK2"];
+            break;
+    }
+    
+}
+
 
 - (void)generateTableOfFreq {
 
@@ -1022,6 +1401,286 @@
 
     }
     
+}
+
+- (void)generateTableOfFreqForCountryEnum {
+
+    ALBTableOfFreq = @[@"915.25", @"915.50", @"915.75", @"916.00", @"916.25", @"916.50", @"916.75", @"917.00", @"917.25", @"917.50",
+                       @"917.75", @"918.00", @"918.25", @"918.50", @"918.75", @"919.00", @"919.25", @"919.50", @"919.75", @"920.00",
+                       @"920.25", @"920.50", @"920.75"];
+    
+    ALGTableOfFreq = @[@"925.25", @"925.75"];
+    
+    CHILETableOfFreq = @[@"925.75", @"926.25", @"926.75", @"927.25"];
+    
+    FCCTableOfFreq = @[@"902.75", @"903.25", @"903.75", @"904.25", @"904.75", @"905.25", @"905.75", @"906.25", @"906.75", @"907.25",
+                      @"907.75", @"908.25", @"908.75", @"909.25", @"909.75", @"910.25", @"910.75", @"911.25", @"911.75", @"912.25",
+                      @"912.75", @"913.25", @"913.75", @"914.25", @"914.75", @"915.25", @"915.75", @"916.25", @"916.75", @"917.25",
+                      @"917.75", @"918.25", @"918.75", @"919.25", @"919.75", @"920.25", @"920.75", @"921.25", @"921.75", @"922.25",
+                      @"922.75", @"923.25", @"923.75", @"924.25", @"924.75", @"925.25", @"925.75", @"926.25", @"926.75", @"927.25"];
+
+    AUTableOfFreq = @[@"920.75", @"921.25", @"921.75", @"922.25", @"922.75", @"923.25", @"923.75", @"924.25", @"924.75", @"925.25"];
+    
+    AU2TableOfFreq = @[@"918.75", @"919.25", @"919.75", @"920.25", @"920.75", @"921.25", @"921.75", @"922.25", @"922.75", @"923.25",
+                       @"923.75", @"924.25", @"924.75", @"925.25"];
+
+    CNTableOfFreq = @[@"920.625", @"920.875", @"921.125", @"921.375", @"921.625", @"921.875", @"922.125", @"922.375",
+                      @"922.625", @"922.875", @"923.125", @"923.375", @"923.625", @"923.875", @"924.125", @"924.375"];
+    
+    ETSITableOfFreq = @[@"865.70", @"866.30", @"866.90", @"867.50"];
+    
+    INTableOfFreq = @[@"865.70", @"866.30", @"866.90"];
+
+    HKTableOfFreq = @[@"920.75", @"921.25", @"921.75", @"922.25", @"922.75", @"923.25", @"923.75", @"924.25"];
+    
+    JPTableOfFreq = @[@"916.80", @"918.00", @"919.20", @"920.40"];
+
+    KRTableOfFreq = @[@"917.30", @"917.90", @"918.50", @"919.10", @"919.70", @"920.30"];
+ 
+    MYTableOfFreq = @[@"919.75", @"920.25", @"920.75", @"921.25", @"921.75", @"922.25"];
+
+    TWTableOfFreq = @[@"922.875", @"923.250", @"923.625", @"924.000", @"924.375", @"924.750", @"925.125", @"925.500", @"925.875", @"926.25", @"926.625", @"927.000"];
+    
+    ZATableOfFreq = @[@"915.7", @"915.9", @"916.1", @"916.3", @"916.5", @"916.7", @"916.9", @"917.1", @"917.3", @"917.5", @"917.7", @"917.9", @"918.1", @"918.3", @"918.5", @"918.7"];
+    
+    
+    BR1TableOfFreq = @[@"915.75", @"916.25", @"916.75", @"917.25", @"917.75", @"918.25", @"918.75", @"919.25", @"919.75", @"920.25",
+                       @"920.75", @"921.25", @"921.75", @"922.25", @"922.75", @"923.25", @"923.75", @"924.25", @"924.75", @"925.25",
+                       @"925.75", @"926.25", @"926.75", @"927.25"];
+
+    BR2TableOfFreq = @[@"902.75", @"903.25", @"903.75", @"904.25", @"904.75", @"905.25", @"905.75", @"906.25", @"906.75",
+                       @"915.75", @"916.25", @"916.75", @"917.25", @"917.75", @"918.25", @"918.75", @"919.25", @"919.75", @"920.25",
+                       @"920.75", @"921.25", @"921.75", @"922.25", @"922.75", @"923.25", @"923.75", @"924.25", @"924.75", @"925.25",
+                       @"925.75", @"926.25", @"926.75", @"927.25"];
+    
+    BR3TableOfFreq = @[@"902.75", @"903.25", @"903.75", @"904.25", @"904.75", @"905.25", @"905.75", @"906.25", @"906.75"];
+    
+    BR4TableOfFreq = @[@"902.75", @"903.25", @"903.75", @"904.25"];
+    
+    BR5TableOfFreq = @[@"917.75", @"918.25", @"918.75", @"919.25", @"919.75", @"920.25", @"920.75",
+                       @"921.25", @"921.75", @"922.25", @"922.75", @"923.25", @"923.75", @"924.25"];
+    
+    IDTableOfFreq = @[@"923.25", @"923.75", @"924.25", @"924.75"];
+    
+    JETableOfFreq = @[@"915.25", @"915.5", @"915.75", @"916.0", @"916.25", @"916.5", @"916.75"];
+    
+    PHTableOfFreq = @[@"918.125", @"918.375", @"918.625", @"918.875", @"919.125", @"919.375", @"919.625", @"919.875"];
+    
+    ETSIUPPERBANDTableOfFreq = @[@"916.3", @"917.5", @"918.7"];
+
+    NZTableOfFreq = @[@"920.75", @"921.25", @"921.75", @"922.25", @"922.75", @"923.25", @"923.75", @"924.25", @"924.75", @"925.25",
+                      @"925.75", @"926.25", @"926.75", @"927.25"];
+    
+    UH1TableOfFreq = @[@"915.25", @"915.75", @"916.25", @"916.75", @"917.25", @"917.75", @"918.25", @"918.75", @"919.25", @"919.75"];
+    
+    UH2TableOfFreq = @[@"920.25", @"920.75", @"921.25", @"921.75", @"922.25",
+                       @"922.75", @"923.25", @"923.75", @"924.25", @"924.75",
+                       @"925.25", @"925.75", @"926.25", @"926.75", @"927.25"];
+    LHTableOfFreq = @[@"902.75", @"903.25", @"903.75", @"904.25", @"904.75", @"905.25", @"905.75", @"906.25", @"906.75", @"907.25",
+                      @"907.75", @"908.25", @"908.75", @"909.25", @"909.75", @"910.25", @"910.75", @"911.25", @"911.75", @"912.25",
+                      @"912.75", @"913.25", @"913.75", @"914.25", @"914.75", @"915.25"];
+    LH1TableOfFreq = @[@"902.75", @"903.25", @"903.75", @"904.25", @"904.75", @"905.25", @"905.75", @"906.25", @"906.75", @"907.25",
+                       @"907.75", @"908.25", @"908.75", @"909.25"];
+    LH2TableOfFreq = @[@"909.75", @"910.25", @"910.75", @"911.25", @"911.75", @"912.25", @"912.75", @"913.25", @"913.75", @"914.25", @"914.75"];
+    
+    VNTableOfFreq  = @[@"922.75", @"923.25", @"923.75", @"924.25", @"924.75", @"925.25", @"925.75", @"926.25", @"926.75", @"927.25"];
+    
+    JP4CHTableOfFreq = @[@"916.80", @"918.00", @"919.20", @"920.40"];
+    
+    JP6CHTableOfFreq = @[@"916.80", @"918.00", @"919.20", @"920.40", @"920.60", @"920.80"];
+    
+    self.TableOfFrequencies = [[NSMutableDictionary alloc] init];
+    self.FrequencyValues = [[NSMutableDictionary alloc] init];
+    self.FrequencyIndex = [[NSMutableDictionary alloc] init];
+    [self generateRegionListForCountryEnum];
+    
+    //list of frequencies for each region
+    //-1
+    if (self.CountryCode == 1) {
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Albania1"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Algeria1"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Algeria2"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Armenia"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Austria1"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Azerbaijan"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Bahrain"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Bangladesh"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Belarus"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Belgium1"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Bosnia"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Botswana"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Brunei1"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Bulgaria1"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Cameroon"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Congo"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Cotedlvoire"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Croatia"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Cyprus1"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Czech1"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Denmark1"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Egypt"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Estonia"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Finland1"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"France"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Georgia"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Germany"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Ghana"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Greece"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"HongKong1"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Hungary1"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Iceland"];
+        [self.TableOfFrequencies setValue:INTableOfFreq forKey:@"India"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Iran"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Ireland1"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Italy"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Jordan"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Kazakhstan"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Kenya"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Kuwait"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Kyrgyz"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Latvia"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Lebanon"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Libya"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Liechtenstein1"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Lithuania1"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Luxembourg1"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Macedonia"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Malta1"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Mauritius"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Moldova1"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Montenegro"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Morocco"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Netherlands"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"NewZealand1"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Nigeria"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Norway1"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Oman"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Pakistan"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Poland"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Portugal"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Romania"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Russia1"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Senegal"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Serbia"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Singapore1"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Slovak1"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Slovenia1"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"SAfrica1"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Spain"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"SriLanka"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Sudan"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Sweden1"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Switzerland1"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Syria"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Tajikistan"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Tanzania"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Tunisia"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Turkey"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Turkmenistan"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Uganda"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Ukraine"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"UAE"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"UK1"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Vietnam1"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Yemen"];
+        [self.TableOfFrequencies setValue:ETSITableOfFreq forKey:@"Zimbabwe"];
+    }   //-2 RW
+    else if (self.CountryCode == 2 && self.SpecialCountryVerison == 0x2A2A5257) {
+        [self.TableOfFrequencies setValue:ALBTableOfFreq forKey:@"Albania2"];
+        [self.TableOfFrequencies setValue:FCCTableOfFreq forKey:@"Argentina"];
+        [self.TableOfFrequencies setValue:BR3TableOfFreq forKey:@"Brazil1"];
+        [self.TableOfFrequencies setValue:BR1TableOfFreq forKey:@"Brazil2"];
+        [self.TableOfFrequencies setValue:ETSIUPPERBANDTableOfFreq forKey:@"Chile1"];
+        [self.TableOfFrequencies setValue:BR1TableOfFreq forKey:@"Chile2"];
+        [self.TableOfFrequencies setValue:CHILETableOfFreq forKey:@"Chile3"];
+        [self.TableOfFrequencies setValue:FCCTableOfFreq forKey:@"Colombia"];
+        [self.TableOfFrequencies setValue:FCCTableOfFreq forKey:@"CostaRica"];
+        [self.TableOfFrequencies setValue:FCCTableOfFreq forKey:@"Cuba"];
+        [self.TableOfFrequencies setValue:FCCTableOfFreq forKey:@"Dominican"];
+        [self.TableOfFrequencies setValue:FCCTableOfFreq forKey:@"Ecuador"];
+        [self.TableOfFrequencies setValue:FCCTableOfFreq forKey:@"ElSalvador"];
+        [self.TableOfFrequencies setValue:FCCTableOfFreq forKey:@"Guatemala"];
+        [self.TableOfFrequencies setValue:FCCTableOfFreq forKey:@"Jamaica"];
+        [self.TableOfFrequencies setValue:FCCTableOfFreq forKey:@"Nicaragua"];
+        [self.TableOfFrequencies setValue:FCCTableOfFreq forKey:@"Panama"];
+        [self.TableOfFrequencies setValue:FCCTableOfFreq forKey:@"Paraguay"];
+        [self.TableOfFrequencies setValue:BR1TableOfFreq forKey:@"Peru"];
+        [self.TableOfFrequencies setValue:FCCTableOfFreq forKey:@"Philippines"];
+        [self.TableOfFrequencies setValue:HKTableOfFreq forKey:@"Thailand"];
+        [self.TableOfFrequencies setValue:FCCTableOfFreq forKey:@"Trinidad"];
+        [self.TableOfFrequencies setValue:FCCTableOfFreq forKey:@"Uruguay"];
+        [self.TableOfFrequencies setValue:FCCTableOfFreq forKey:@"Venezuela"];
+    }   //-2 OFCA
+    else if (self.CountryCode == 2 && self.SpecialCountryVerison == 0x4F464341) {
+        [self.TableOfFrequencies setValue:FCCTableOfFreq forKey:@"HongKong2"];
+    }   //-2 AS
+    else if (self.CountryCode == 2 && self.SpecialCountryVerison == 0x2A2A4153) {
+        [self.TableOfFrequencies setValue:AUTableOfFreq forKey:@"Australia1"];
+        [self.TableOfFrequencies setValue:AU2TableOfFreq forKey:@"Australia2"];
+    }   //-2 NZ
+    else if (self.CountryCode == 2 && self.SpecialCountryVerison == 0x2A2A4E5A) {
+        [self.TableOfFrequencies setValue:NZTableOfFreq forKey:@"NewZealand2"];
+    }   //-2 SG
+    else if (self.CountryCode == 2 && self.SpecialCountryVerison == 0x2A2A5347) {
+        [self.TableOfFrequencies setValue:HKTableOfFreq forKey:@"Singapore2"];
+    }
+    else if (self.CountryCode == 2) {
+        [self.TableOfFrequencies setValue:FCCTableOfFreq forKey:@"Bolivia"];
+        [self.TableOfFrequencies setValue:FCCTableOfFreq forKey:@"Canada"];
+        [self.TableOfFrequencies setValue:FCCTableOfFreq forKey:@"Mexico"];
+        [self.TableOfFrequencies setValue:FCCTableOfFreq forKey:@"USA"];
+    }
+    else if (self.CountryCode == 4) {
+        [self.TableOfFrequencies setValue:TWTableOfFreq forKey:@"Taiwan1"];
+        [self.TableOfFrequencies setValue:TWTableOfFreq forKey:@"Taiwan2"];
+    }
+    else if (self.CountryCode == 6) {
+        [self.TableOfFrequencies setValue:KRTableOfFreq forKey:@"Korea"];
+    }
+    else if (self.CountryCode == 7) {
+        [self.TableOfFrequencies setValue:ALGTableOfFreq forKey:@"Algeria4"];
+        [self.TableOfFrequencies setValue:IDTableOfFreq forKey:@"Brunei2"];
+        [self.TableOfFrequencies setValue:CNTableOfFreq forKey:@"Cambodia"];
+        [self.TableOfFrequencies setValue:CNTableOfFreq forKey:@"China"];
+        [self.TableOfFrequencies setValue:IDTableOfFreq forKey:@"Indonesia"];
+        [self.TableOfFrequencies setValue:CNTableOfFreq forKey:@"KoreaDPR"];
+        [self.TableOfFrequencies setValue:CNTableOfFreq forKey:@"Macao"];
+        [self.TableOfFrequencies setValue:MYTableOfFreq forKey:@"Malaysia"];
+        [self.TableOfFrequencies setValue:CNTableOfFreq forKey:@"Mongolia"];
+        [self.TableOfFrequencies setValue:CNTableOfFreq forKey:@"Vietnam2"];
+    }
+    else if (self.CountryCode == 8 && self.SpecialCountryVerison == 0x2A4A5036) {
+        [self.TableOfFrequencies setValue:JP6CHTableOfFreq forKey:@"Japan6"];
+    }
+    else if (self.CountryCode == 8) {
+        [self.TableOfFrequencies setValue:JP4CHTableOfFreq forKey:@"Japan4"];
+    }
+    else if (self.CountryCode == 9) {
+        [self.TableOfFrequencies setValue:ETSIUPPERBANDTableOfFreq forKey:@"Algeria3"];
+        [self.TableOfFrequencies setValue:ETSIUPPERBANDTableOfFreq forKey:@"Austria2"];
+        [self.TableOfFrequencies setValue:ETSIUPPERBANDTableOfFreq forKey:@"Belgium2"];
+        [self.TableOfFrequencies setValue:ETSIUPPERBANDTableOfFreq forKey:@"Bulgaria2"];
+        [self.TableOfFrequencies setValue:ETSIUPPERBANDTableOfFreq forKey:@"Cyprus2"];
+        [self.TableOfFrequencies setValue:ETSIUPPERBANDTableOfFreq forKey:@"Czech2"];
+        [self.TableOfFrequencies setValue:ETSIUPPERBANDTableOfFreq forKey:@"Denmark2"];
+        [self.TableOfFrequencies setValue:ETSIUPPERBANDTableOfFreq forKey:@"Finland2"];
+        [self.TableOfFrequencies setValue:ETSIUPPERBANDTableOfFreq forKey:@"Hungary2"];
+        [self.TableOfFrequencies setValue:ETSIUPPERBANDTableOfFreq forKey:@"Ireland2"];
+        [self.TableOfFrequencies setValue:ETSIUPPERBANDTableOfFreq forKey:@"Israel"];
+        [self.TableOfFrequencies setValue:ETSIUPPERBANDTableOfFreq forKey:@"Liechtenstein2"];
+        [self.TableOfFrequencies setValue:ETSIUPPERBANDTableOfFreq forKey:@"Lithuania2"];
+        [self.TableOfFrequencies setValue:ETSIUPPERBANDTableOfFreq forKey:@"Luxembourg2"];
+        [self.TableOfFrequencies setValue:ETSIUPPERBANDTableOfFreq forKey:@"Malta2"];
+        [self.TableOfFrequencies setValue:ETSIUPPERBANDTableOfFreq forKey:@"Moldova2"];
+        [self.TableOfFrequencies setValue:ETSIUPPERBANDTableOfFreq forKey:@"Norway2"];
+        [self.TableOfFrequencies setValue:ETSIUPPERBANDTableOfFreq forKey:@"Russia3"];
+        [self.TableOfFrequencies setValue:ETSIUPPERBANDTableOfFreq forKey:@"Slovak2"];
+        [self.TableOfFrequencies setValue:ETSIUPPERBANDTableOfFreq forKey:@"Solvenia2"];
+        [self.TableOfFrequencies setValue:ETSIUPPERBANDTableOfFreq forKey:@"SAfrica2"];
+        [self.TableOfFrequencies setValue:ETSIUPPERBANDTableOfFreq forKey:@"Sweden2"];
+        [self.TableOfFrequencies setValue:ETSIUPPERBANDTableOfFreq forKey:@"Switzerland2"];
+        [self.TableOfFrequencies setValue:ETSIUPPERBANDTableOfFreq forKey:@"UK2"];
+    }
 }
 
 @end

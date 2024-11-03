@@ -280,6 +280,46 @@
     return false;
 }
 
+- (BOOL)E710GetFrequencyChannelIndex:(CSLBleInterface*)intf forData:(UInt32*)data {
+    
+    if (self.readerModelNumber != CS710) {
+        NSLog(@"RFID command failed. Invalid reader");
+        return false;
+    }
+    
+    NSData* regData;
+    
+    if ([self E710ReadRegister:intf atAddr:0x3018 regLength:1 forData:&regData timeOutInSeconds:1])
+    {
+        if ([regData length] == 1) {
+            *data = ((Byte*)[regData bytes])[0];
+            return true;
+        }
+    }
+    *data = 0;
+    return false;
+}
+
+- (BOOL)E710SetCountryEnum:(CSLBleInterface*)intf forData:(UInt32)data {
+    
+    if (self.readerModelNumber != CS710) {
+        NSLog(@"RFID command failed. Invalid reader");
+        return false;
+    }
+    
+    Byte errorCode;
+    
+    NSData *regData = [NSData dataWithBytes:&data length: sizeof(data)];
+    
+    if (![self E710WriteRegister:self atAddr:0x3014 regLength:2 forData:regData timeOutInSeconds:1 error:&errorCode])
+    {
+        NSLog(@"Write register failed. Error code: %d", errorCode);
+        return false;
+    }
+    NSLog(@"RFID set country enum (%d) command sent: OK", data);
+    return true;
+}
+
 - (BOOL)E710ReadRegister:(CSLBleInterface*)intf atAddr:(unsigned short)addr regLength:(Byte)len forData:(NSData**)data timeOutInSeconds:(int)timeOut {
 
     if (self.readerModelNumber != CS710) {
@@ -728,12 +768,32 @@
     
     if (self.readerModelNumber == CS710)
     {
-        //TODO: for E710
+        Byte errorCode;
+        
+        //get country enum by region name
+        UInt16 countryEnum = [frequencyInfo GetCountryEnumByCountryName:region];
+        //set region
+        NSData *regData = [NSData dataWithBytes:&countryEnum length: sizeof(countryEnum)];
+        
+        if (![self E710WriteRegister:self atAddr:0x3014 regLength:2 forData:regData timeOutInSeconds:1 error:&errorCode])
+        {
+            NSLog(@"Error setting country enum. Error code: %d", errorCode);
+            return false;
+        }
+        NSLog(@"RFID set country enum (%d) command sent: OK", countryEnum);
+        
+        //set frequency channel index to 0
+        regData = [NSData dataWithBytes:0 length: 1];
+        if (![self E710WriteRegister:self atAddr:0x3018 regLength:1 forData:regData timeOutInSeconds:1 error:&errorCode])
+        {
+            NSLog(@"Error setting frequency channel index. Error code: %d", errorCode);
+            return false;
+        }
+        
         return true;
     }
     else
     {
-        
         UInt32 channelCount=(UInt32)[(NSArray*)frequencyInfo.FrequencyValues[region] count];
         
         //Enable channels
@@ -765,7 +825,28 @@
     
     if (self.readerModelNumber == CS710)
     {
-        //TODO: for E710
+        Byte errorCode;
+        
+        //get country enum by region name
+        UInt16 countryEnum = [frequencyInfo GetCountryEnumByCountryName:region];
+        //set region
+        NSData *regData = [NSData dataWithBytes:&countryEnum length: sizeof(countryEnum)];
+        
+        if (![self E710WriteRegister:self atAddr:0x3014 regLength:2 forData:regData timeOutInSeconds:1 error:&errorCode])
+        {
+            NSLog(@"Error setting country enum. Error code: %d", errorCode);
+            return false;
+        }
+        NSLog(@"RFID set country enum (%d) command sent: OK", countryEnum);
+        
+        //set frequency channel index to 0
+        regData = [NSData dataWithBytes:&index length: 1];
+        if (![self E710WriteRegister:self atAddr:0x3018 regLength:1 forData:regData timeOutInSeconds:1 error:&errorCode])
+        {
+            NSLog(@"Error setting frequency channel index. Error code: %d", errorCode);
+            return false;
+        }
+        
         return true;
     }
     else

@@ -23,6 +23,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (assign, readonly) UInt32 isFixed;
 ///List of Regions based on the OEM data
 @property NSMutableArray* RegionList;
+///List of all regions available
+@property NSMutableArray* AllRegionList;
+///Listing of hopping/fixed channel for all regions
+@property NSArray* CountryEnumToHoppingStatus;
 ///Provide a key with the region code and get an array of frequencies
 @property NSMutableDictionary* TableOfFrequencies;
 ///Provide a key with the region code and get an array of frequency values
@@ -31,8 +35,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property NSMutableDictionary* FrequencyIndex;
 
 -(id)initWithOEMData:(UInt32)countryCode specialCountryVerison:(UInt32)special_country FreqModFlag:(UInt32)freq_mod_flag ModelCode:(UInt32)model_code isFixed:(UInt32)is_fixed;
--(id)initWithOEMData:(UInt32)countryCode specialCountryVerison:(UInt32)special_country FreqModFlag:(UInt32)freq_mod_flag ModelCode:(UInt32)model_code CountryEnum:(UInt16)country_enum;
+-(id)initWithOEMDataForCS710S:(UInt32)countryCode specialCountryVerison:(UInt32)special_country FreqModFlag:(UInt32)freq_mod_flag ModelCode:(UInt32)model_code;
 
+-(int)GetCountryEnumByCountryName:(NSString*)country_name;
 
 
 @end
