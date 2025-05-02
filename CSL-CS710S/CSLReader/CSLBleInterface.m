@@ -112,6 +112,25 @@
                     [bleDeviceList removeAllObjects];
                     [deviceListName removeAllObjects];
                     [deviceListModel removeAllObjects];
+                    
+                    // Call retrieveConnectedPeripherals here to get a list of current repaired/bounded CS710S device
+                    CBUUID *serviceUUID = [CBUUID UUIDWithString:@"9802"]; // service UUID for CS710S
+                    NSArray<CBPeripheral *> *connectedPeripherals = [manager retrieveConnectedPeripheralsWithServices:@[serviceUUID]];
+                    
+                    if ([connectedPeripherals count] > 0) {
+                        for (CBPeripheral *peripheral in connectedPeripherals) {
+                            NSLog(@"Connected peripheral found: %@", peripheral.name);
+                            NSMutableArray *peripherals = [self mutableArrayValueForKey:@"bleDeviceList"];
+                            if( ![bleDeviceList containsObject:peripheral] ) {
+                                //Add the device to the search list
+                                [deviceListModel addObject:@"CS710"];
+                                [deviceListName addObject:peripheral.name];
+                                [peripherals addObject:peripheral];
+                                [self.scanDelegate deviceListWasUpdated:peripheral];
+                            }
+                        }
+                    }
+
                     [manager scanForPeripheralsWithServices:[NSArray arrayWithObjects:[CBUUID UUIDWithString:@"9800"], [CBUUID UUIDWithString:@"9802"], nil] options:options];
                     connectStatus=SCANNING;
                     [self.delegate didInterfaceChangeConnectStatus:self]; //this will call the method for connections status chagnes.
