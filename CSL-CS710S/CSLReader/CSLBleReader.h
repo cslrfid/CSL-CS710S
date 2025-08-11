@@ -65,7 +65,24 @@ typedef NS_ENUM(Byte, LINKPROFILE)
     MID_222 = 0x17,
     MID_241 = 0x18,
     MID_244 = 0x19,
-    MID_285 = 0x1A
+    MID_285 = 0x1A,
+    MID_104 = 0x1B,
+    MID_4323 = 0x1C,
+    MID_203 = 0x1D,
+    MID_202 = 0x1E,
+    MID_226 = 0x1F,
+    MID_4345 = 0x20,
+    MID_225 = 0x21,
+    MID_326 = 0x22,
+    MID_325 = 0x23,
+    MID_324 = 0x24,
+    MID_4324 = 0x25,
+    MID_342 = 0x26,
+    MID_4342 = 0x27,
+    MID_343 = 0x28,
+    MID_4343 = 0x29,
+    MID_205 = 0x2A,
+    MID_4382 = 0x2B
 };
 //Argument to underlying Query
 typedef NS_ENUM(Byte, QUERYSELECT)
@@ -503,11 +520,34 @@ Set antenna inventory count
 */
 - (BOOL)setAntennaInventoryCount:(NSUInteger) count;
 /**
+To check if RFID firmware version is 2.1.2 or later
+@return TRUE if the firmware version >= 2.1.2
+*/
+- (BOOL)E710IsRfidFw212;
+/**
  Set link profile from the four selections
  @param profile LINKPROFILE data type that represents 1 of the 4 link profile
  @return TRUE if the operation is successful
  */
 - (BOOL)setLinkProfile:(LINKPROFILE) profile;
+/**
+Get list of profile ID by the reader type
+ @param readerType READERTYPE data type that represents the type of reader being used (CS108 or CS710S)
+ @return List of profile ID as NSNumber type
+ */
+- (NSArray<NSNumber *> *)GetListOfProfileIds:(READERTYPE)readerType;
+/**
+Get profile descriptions based by profile ID
+ @param profile LINKPROFILE data type of the profile
+ @return string of the profile descriptions
+ */
+- (NSString *)GetProfileDescriptionsBy:(LINKPROFILE)profile;
+/**
+Get profile ID by profile descriptions
+ @param descriptionText  profile descriptions in text
+ @return LINKPROFILE  profile ID
+ */
+- (LINKPROFILE)ProfileFromDescription:(NSString *)descriptionText;
 /**
 Select which set of algorithm parameter registers to access.
  @param algorithm zero based index of descriptor to access 0 through 3
