@@ -3552,7 +3552,7 @@
     }
     
     NSString * rfidFwVersion;
-    if ([self getRfidFwVersionNumber:&rfidFwVersion])
+    if (![self getRfidFwVersionNumber:&rfidFwVersion])
     {
         NSLog(@"Unable get RFID firmware version");
         return false;
