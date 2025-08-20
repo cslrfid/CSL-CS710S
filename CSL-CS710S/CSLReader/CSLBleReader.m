@@ -3544,6 +3544,224 @@
     return true;
 }
 
+- (BOOL)E710IsRfidFw212 {
+    
+    if (self.readerModelNumber != CS710) {
+        NSLog(@"RFID command failed. Invalid reader");
+        return false;
+    }
+    
+    NSString * rfidFwVersion;
+    if (![self getRfidFwVersionNumber:&rfidFwVersion])
+    {
+        NSLog(@"Unable get RFID firmware version");
+        return false;
+    }
+    
+    NSComparisonResult result = [rfidFwVersion compare:@"2.1.2" options:NSNumericSearch];
+    
+    return (result != NSOrderedAscending);
+    
+}
+
+
+- (NSArray<NSNumber *> *)GetListOfProfileIds:(READERTYPE)readerType {
+    switch (readerType) {
+        case CS108:
+            return @[@((Byte)MULTIPATH_INTERFERENCE_RESISTANCE),
+                     @((Byte)RANGE_DRM),
+                     @((Byte)RANGE_THROUGHPUT_DRM),
+                     @((Byte)MAX_THROUGHPUT)];
+            break;
+        case CS710:
+            if (![self E710IsRfidFw212])
+                return @[@((Byte)MID_103),
+                         @((Byte)MID_120),
+                         @((Byte)MID_345),
+                         @((Byte)MID_302),
+                         @((Byte)MID_323),
+                         @((Byte)MID_344),
+                         @((Byte)MID_223),
+                         @((Byte)MID_222),
+                         @((Byte)MID_241),
+                         @((Byte)MID_244),
+                         @((Byte)MID_285)];
+            else
+                return @[@((Byte)MID_103),
+                         @((Byte)MID_302),
+                         @((Byte)MID_120),
+                         @((Byte)MID_104),
+                         @((Byte)MID_323),
+                         @((Byte)MID_4323),
+                         @((Byte)MID_203),
+                         @((Byte)MID_202),
+                         @((Byte)MID_226),
+                         @((Byte)MID_344),
+                         @((Byte)MID_345),
+                         @((Byte)MID_4345),
+                         @((Byte)MID_225),
+                         @((Byte)MID_326),
+                         @((Byte)MID_325),
+                         @((Byte)MID_324),
+                         @((Byte)MID_4324),
+                         @((Byte)MID_342),
+                         @((Byte)MID_4342),
+                         @((Byte)MID_343),
+                         @((Byte)MID_4343),
+                         @((Byte)MID_205),
+                         @((Byte)MID_4382)];
+        default:
+            return @[]; // Empty array if category not recognized
+    }
+}
+
+- (NSString *)GetProfileDescriptionsBy:(LINKPROFILE)profile
+{
+    switch (profile) {
+        case MULTIPATH_INTERFERENCE_RESISTANCE:
+            return @"0. Multipath Interference Resistance";
+            break;
+        case RANGE_DRM:
+            return @"1. Range/Dense Reader";
+            break;
+        case RANGE_THROUGHPUT_DRM:
+            return @"2. Range/Throughput/Dense Reader";
+            break;
+        case MAX_THROUGHPUT:
+            return @"3. Max Throughput";
+            break;
+        case MID_103:
+            return @"103: Miller 1 640kHz Tari 6.25us";
+            break;
+        case MID_120:
+            return @"120: Miller 2 640kHz Tari 6.25us";
+            break;
+        case MID_345:
+            return @"345: Miller 4 640kHz Tari 7.5us";
+            break;
+        case MID_302:
+            return @"302: Miller 1 640kHz Tari 7.5us";
+            break;
+        case MID_323:
+            return @"323: Miller 2 640kHz Tari 7.5us";
+            break;
+        case MID_344:
+            return @"344: Miller 4 640kHz Tari 7.5us";
+            break;
+        case MID_223:
+            return @"223: Miller 2 320kHz Tari 15us";
+            break;
+        case MID_222:
+            return @"222: Miller 2 320kHz Tari 20us";
+            break;
+        case MID_241:
+            return @"241: Miller 4 320kHz Tari 20us";
+            break;
+        case MID_244:
+            return @"244: Miller 4 250kHz Tari 20us";
+            break;
+        case MID_285:
+            return @"285: Miller 8 160kHz Tari 20us";
+            break;
+        case MID_104:
+            return @"104: FM0 320KHz Tari 6.25us";
+            break;
+        case MID_4323:
+            return @"4323: Miller 2 640Hz Tari 7.5us";
+            break;
+        case MID_203:
+            return @"203: FM0 426KHz Tari 12.5us";
+            break;
+        case MID_202:
+            return @"202: FM0 426KHz Tari 15us";
+            break;
+        case MID_226:
+            return @"226: Miller 2 426Hz Tari 12.5us";
+            break;
+        case MID_4345:
+            return @"4345: Miller 4 640Hz Tari 7.5us";
+            break;
+        case MID_225:
+            return @"225: Miller 2 426Hz Tari 15us";
+            break;
+        case MID_326:
+            return @"326: Miller 2 320Hz Tari 12.5us";
+            break;
+        case MID_325:
+            return @"325: Miller 2 320Hz Tari 15us";
+            break;
+        case MID_324:
+            return @"324: Miller 2 320Hz Tari 20us";
+            break;
+        case MID_4324:
+            return @"4324: Miller 2 320Hz Tari 20us";
+            break;
+        case MID_342:
+            return @"342: Miller 4 320Hz Tari 20us";
+            break;
+        case MID_4342:
+            return @"4342: Miller 4 320Hz Tari 20us";
+            break;
+        case MID_343:
+            return @"343: Miller 4 250Hz Tari 20us";
+            break;
+        case MID_4343:
+            return @"4343: Miller 4 250Hz Tari 20us";
+            break;
+        case MID_205:
+            return @"205: FM0 50KHz Tari 20us";
+            break;
+        case MID_4382:
+            return @"4382: Miller 8 160Hz Tari 20us";
+            break;
+        default:
+            break;
+    }
+    
+    return @"";
+}
+
+- (LINKPROFILE)ProfileFromDescription:(NSString *)descriptionText {
+    if (descriptionText.length == 0) return (LINKPROFILE)NSNotFound;
+
+    static NSDictionary<NSString *, NSNumber *> *descToProfile;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        NSMutableDictionary *map = [NSMutableDictionary dictionary];
+
+        // Build mapping from the enum constants to descriptions
+        LINKPROFILE allProfiles[] = {
+            MULTIPATH_INTERFERENCE_RESISTANCE,
+            RANGE_DRM,
+            RANGE_THROUGHPUT_DRM,
+            MAX_THROUGHPUT,
+            MID_103, MID_120, MID_345, MID_302, MID_323, MID_344,
+            MID_223, MID_222, MID_241, MID_244, MID_285,
+            MID_104, MID_4323, MID_203, MID_202, MID_226,
+            MID_4345, MID_225, MID_326, MID_325, MID_324,
+            MID_4324, MID_342, MID_4342, MID_343, MID_4343,
+            MID_205, MID_4382
+        };
+        NSUInteger count = sizeof(allProfiles) / sizeof(allProfiles[0]);
+
+        for (NSUInteger i = 0; i < count; i++) {
+            LINKPROFILE p = allProfiles[i];
+            NSString *desc = [self GetProfileDescriptionsBy:p];
+            if (desc.length > 0) {
+                map[desc] = @(p);
+            }
+        }
+        descToProfile = [map copy];
+    });
+
+    NSNumber *val = descToProfile[descriptionText];
+    if (val) {
+        return (LINKPROFILE)val.unsignedCharValue; // Because enum is Byte
+    }
+
+    return (LINKPROFILE)NSNotFound;
+}
+
 - (BOOL)setLinkProfile:(LINKPROFILE) profile
 {
     return [self setLinkProfile:0 linkProfile:profile];
@@ -3589,6 +3807,54 @@
                     break;
                 case MID_323:
                     mode = 323;
+                    break;
+                case MID_104:
+                    mode = 104;
+                    break;
+                case MID_4323:
+                    mode = 4323;
+                    break;
+                case MID_203:
+                    mode = 203;
+                    break;
+                case MID_202:
+                    mode = 202;
+                    break;
+                case MID_226:
+                    mode = 226;
+                    break;
+                case MID_4345:
+                    mode = 4345;
+                    break;
+                case MID_225:
+                    mode = 225;
+                    break;
+                case MID_326:
+                    mode = 326;
+                    break;
+                case MID_325:
+                    mode = 325;
+                    break;
+                case MID_324:
+                    mode = 324;
+                    break;
+                case MID_4324:
+                    mode = 4324;
+                    break;
+                case MID_342:
+                    mode = 342;
+                    break;
+                case MID_4342:
+                    mode = 4342;
+                    break;
+                case MID_343:
+                    mode = 343;
+                    break;
+                case MID_4343:
+                    mode = 4343;
+                    break;
+                case MID_205:
+                    mode = 205;
                     break;
                 default:
                     mode = 345;
