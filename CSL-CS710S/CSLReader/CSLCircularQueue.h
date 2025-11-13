@@ -6,7 +6,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "CSLBleTag.h"
+#import <CSL_CS710S/CSLBleTag.h>
 
 /**
  Circular queue for storing tag response data

@@ -7,8 +7,8 @@
 
 #import <Foundation/Foundation.h>
 #import <CoreBluetooth/CoreBluetooth.h>
-#import "CSLBlePacket.h"
-#import "CSLCircularQueue.h"
+#import <CSL_CS710S/CSLBlePacket.h>
+#import <CSL_CS710S/CSLCircularQueue.h>
 
 /**Reader status representations*/
 typedef NS_ENUM(Byte, STATUS) {

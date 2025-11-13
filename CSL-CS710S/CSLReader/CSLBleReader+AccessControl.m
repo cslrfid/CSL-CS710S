@@ -2097,6 +2097,13 @@
     
 }
 
+-
+
+(BOOL)E710SCSLRFIDStartSelectInventory {
+    //TODO: pending for implementation
+    return true;
+}
+
 - (BOOL) startTagMemoryWrite:(MEMORYBANK)bank dataOffset:(UInt16)offset dataCount:(UInt16)count writeData:(NSData*)data ACCPWD:(UInt32)password maskBank:(MEMORYBANK)mask_bank maskPointer:(UInt16)mask_pointer maskLength:(UInt32)mask_Length maskData:(NSData*)mask_data {
     
     int ptr, ptr2;  //tag write buffer pointer

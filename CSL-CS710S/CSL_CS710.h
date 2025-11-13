@@ -13,18 +13,18 @@ FOUNDATION_EXPORT double CSL_CS710VersionNumber;
 FOUNDATION_EXPORT const unsigned char CSL_CS710VersionString[];
 
 // In this header, you should import all the public headers of your framework using statements like #import <CSL_CS710/PublicHeader.h>
-#import "CSLReaderFrequency.h"
-#import "CSLReaderBattery.h"
-#import "CSLReaderSettings.h"
-#import "CSLReaderInfo.h"
-#import "CSLRfidAppEngine.h"
-#import "CSLReaderBarcode.h"
-#import "CSLTemperatureTagSettings.h"
-#import "CSLReaderConfigurations.h"
-#import "CSLBleReader.h"
-#import "CSLBleReader+AccessControl.h"
-#import "CSLBleTag.h"
-#import "CSLBleInterface.h"
-#import "CSLCircularQueue.h"
-#import "CSLBlePacket.h"
+#import <CSL_CS710S/CSLReaderFrequency.h>
+#import <CSL_CS710S/CSLReaderBattery.h>
+#import <CSL_CS710S/CSLReaderSettings.h>
+#import <CSL_CS710S/CSLReaderInfo.h>
+#import <CSL_CS710S/CSLRfidAppEngine.h>
+#import <CSL_CS710S/CSLReaderBarcode.h>
+#import <CSL_CS710S/CSLTemperatureTagSettings.h>
+#import <CSL_CS710S/CSLReaderConfigurations.h>
+#import <CSL_CS710S/CSLBleReader.h>
+#import <CSL_CS710S/CSLBleReader+AccessControl.h>
+#import <CSL_CS710S/CSLBleTag.h>
+#import <CSL_CS710S/CSLBleInterface.h>
+#import <CSL_CS710S/CSLCircularQueue.h>
+#import <CSL_CS710S/CSLBlePacket.h>
 
