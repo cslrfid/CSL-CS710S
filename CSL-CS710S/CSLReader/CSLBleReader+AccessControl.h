@@ -5,7 +5,7 @@
 //  Copyright © 2022 Convergence Systems Limited. All rights reserved.
 //
 
-#import "CSLBleReader.h"
+#import <CSL_CS710S/CSLBleReader.h>
 
 #define TAGMSK_0_3 0x0805
 #define TAGMSK_4_7 0x0806
