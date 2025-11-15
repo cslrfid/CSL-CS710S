@@ -5,7 +5,7 @@
 //  Copyright © 2022 Convergence Systems Limited. All rights reserved.
 //
 
-#import "CSLTemperatureTagSettings.h"
+#import "../include/CSLTemperatureTagSettings.h"
 
 @implementation CSLTemperatureTagSettings
 
@@ -22,7 +22,7 @@
         self.reading=TEMPERATURE;
         self.powerLevel=SYSTEMSETTING;
         self.tagIdFormat=HEX;
-        self.moistureAlertCondition=GREATER;
+        self.moistureAlertCondition=ALERT_GREATER;
         self.moistureAlertValue=100;
         self.NumberOfRollingAvergage=3;
         self.unit=CELCIUS;

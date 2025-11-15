@@ -5,7 +5,7 @@
 //  Copyright © 2022 Convergence Systems Limited. All rights reserved.
 //
 
-#import "CSLReaderBarcode.h"
+#import "../include/CSLReaderBarcode.h"
 
 @interface CSLReaderBarcode() {
     NSMutableDictionary *codeIdDescriptons;

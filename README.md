@@ -3,7 +3,7 @@
 ![Platform](https://img.shields.io/badge/platform-iOS%2013.0%2B-blue.svg)
 ![Language](https://img.shields.io/badge/language-Objective--C-orange.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
-![Version](https://img.shields.io/badge/version-1.11.0-red.svg)
+![Version](https://img.shields.io/badge/version-1.12.0-red.svg)
 
 CocoaPod Framework for CSL CS710S RFID SDK - A comprehensive iOS framework for interfacing with CSL CS710 RFID handheld readers via Bluetooth Low Energy (BLE).
 
@@ -27,7 +27,28 @@ The CSL-CS710S SDK provides a complete solution for iOS applications to communic
 
 ## Installation
 
-### CocoaPods
+### Swift Package Manager (Recommended)
+
+Swift Package Manager is Apple's official dependency manager and the recommended installation method.
+
+**Xcode 13+:**
+
+1. In Xcode, go to `File` > `Add Packages...`
+2. Enter the repository URL: `https://github.com/cslrfid/CSL-CS710S.git`
+3. Select version `1.12.0` or later
+4. Click `Add Package`
+
+**Package.swift:**
+
+```swift
+dependencies: [
+    .package(url: "https://github.com/cslrfid/CSL-CS710S.git", from: "1.12.0")
+]
+```
+
+### CocoaPods (Supported until December 2026)
+
+> **Note**: CocoaPods will become read-only in December 2026. We recommend migrating to Swift Package Manager for future compatibility.
 
 Add the following line to your `Podfile`:
 
@@ -242,10 +263,17 @@ Settings are automatically saved to and loaded from `NSUserDefaults`:
 
 ## Version History
 
-### 1.11.0 (Current)
-- Removed MQTTClient dependency
-- Streamlined codebase for pure RFID operations
+### 1.12.0 (Current)
+- **Added Swift Package Manager support** - Future-proof distribution method
+- Dual distribution support - Works with both CocoaPods and Swift Package Manager
+- Reorganized header structure - All public headers now in `include/` directory
+- Fixed enum naming conflict (ALERTCONDITION) for better system compatibility
 - Updated framework imports to use module syntax
+- **Updated .gitignore** - Added Swift Package Manager build artifacts exclusion
+
+### 1.11.0
+- Removed MQTTClient dependency - Streamlined for pure RFID operations
+- Streamlined codebase for pure RFID operations
 
 ### 1.10.0
 - Bug fix on `getRfidFwVersionNumber`

@@ -6,11 +6,11 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <CSL_CS710S/CSLBleInterface.h>
-#import <CSL_CS710S/CSLBleTag.h>
-#import <CSL_CS710S/CSLReaderBattery.h>
-#import <CSL_CS710S/CSLReaderBarcode.h>
-#import <CSL_CS710S/CSLReaderFrequency.h>
+#import "CSLBleInterface.h"
+#import "CSLBleTag.h"
+#import "CSLReaderBattery.h"
+#import "CSLReaderBarcode.h"
+#import "CSLReaderFrequency.h"
 
 #define COMMAND_TIMEOUT_1S 1000
 #define COMMAND_TIMEOUT_2S 2000

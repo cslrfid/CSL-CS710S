@@ -5,7 +5,7 @@
 //  Copyright © 2022 Convergence Systems Limited. All rights reserved.
 //
 
-#import "CSLReaderConfigurations.h"
+#import "../include/CSLReaderConfigurations.h"
 
 @implementation CSLReaderConfigurations
 

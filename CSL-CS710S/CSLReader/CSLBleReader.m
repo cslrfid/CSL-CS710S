@@ -5,7 +5,7 @@
 //  Copyright © 2022 Convergence Systems Limited. All rights reserved.
 //
 
-#import "CSLBleReader.h"
+#import "../include/CSLBleReader.h"
 
 //define private methods and variables
 

@@ -5,7 +5,7 @@
 //  Copyright © 2022 Convergence Systems Limited. All rights reserved.
 //
 
-#import "CSLBlePacket.h"
+#import "../include/CSLBlePacket.h"
 
 @implementation CSLBlePacket
 

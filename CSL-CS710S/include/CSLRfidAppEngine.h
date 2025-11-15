@@ -7,15 +7,15 @@
 
 #import <Foundation/Foundation.h>
 #import <AudioToolbox/AudioToolbox.h>
-#import <CSL_CS710S/CSLBleReader.h>
-#import <CSL_CS710S/CSLBleReader+AccessControl.h>
-#import <CSL_CS710S/CSLBleTag.h>
-#import <CSL_CS710S/CSLBlePacket.h>
-#import <CSL_CS710S/CSLReaderSettings.h>
-#import <CSL_CS710S/CSLReaderInfo.h>
-#import <CSL_CS710S/CSLTemperatureTagSettings.h>
-#import <CSL_CS710S/CSLReaderFrequency.h>
-#import <CSL_CS710S/CSLReaderConfigurations.h>
+#import "CSLBleReader.h"
+#import "CSLBleReader+AccessControl.h"
+#import "CSLBleTag.h"
+#import "CSLBlePacket.h"
+#import "CSLReaderSettings.h"
+#import "CSLReaderInfo.h"
+#import "CSLTemperatureTagSettings.h"
+#import "CSLReaderFrequency.h"
+#import "CSLReaderConfigurations.h"
 
 #define UIColorFromRGB(rgbValue) [UIColor colorWithRed:((float)((rgbValue & 0xFF0000) >> 16))/255.0 green:((float)((rgbValue & 0xFF00) >> 8))/255.0 blue:((float)(rgbValue & 0xFF))/255.0 alpha:1.0]
 

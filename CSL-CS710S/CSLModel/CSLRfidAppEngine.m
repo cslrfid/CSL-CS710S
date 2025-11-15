@@ -5,7 +5,7 @@
 //  Copyright © 2022 Convergence Systems Limited. All rights reserved.
 //
 
-#import "CSLRfidAppEngine.h"
+#import "../include/CSLRfidAppEngine.h"
 
 CSLRfidAppEngine * appEngine;
 

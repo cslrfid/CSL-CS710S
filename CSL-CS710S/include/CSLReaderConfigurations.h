@@ -6,7 +6,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <CSL_CS710S/CSLRfidAppEngine.h>
+#import "CSLRfidAppEngine.h"
 
 
 NS_ASSUME_NONNULL_BEGIN

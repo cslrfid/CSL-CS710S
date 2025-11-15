@@ -5,7 +5,7 @@
 //  Copyright © 2022 Convergence Systems Limited. All rights reserved.
 //
 
-#import "CSLBleTag.h"
+#import "../include/CSLBleTag.h"
 
 @implementation CSLBleTag
 

@@ -6,8 +6,8 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <CSL_CS710S/CSLBleReader.h>
-#import <CSL_CS710S/CSLBleReader+AccessControl.h>
+#import "CSLBleReader.h"
+#import "CSLBleReader+AccessControl.h"
 
 
 ///Reader Settings

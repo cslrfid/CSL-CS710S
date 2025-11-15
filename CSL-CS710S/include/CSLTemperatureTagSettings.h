@@ -6,7 +6,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <CSL_CS710S/CSLCircularQueue.h>
+#import "CSLCircularQueue.h"
 
 #define MIN_TEMP_VALUE -40.0
 #define MAX_TEMP_VALUE +85.0
@@ -58,8 +58,8 @@ typedef NS_ENUM(Byte, POWERLEVEL)
 ///Sensor Reading
 typedef NS_ENUM(BOOL, ALERTCONDITION)
 {
-    GREATER = 0,
-    LESSTHAN=1
+    ALERT_GREATER = 0,
+    ALERT_LESSTHAN = 1
 };
 
 @interface CSLTemperatureTagSettings : NSObject

@@ -5,7 +5,7 @@
 //  Copyright © 2022 Convergence Systems Limited. All rights reserved.
 //
 
-#import "CSLCircularQueue.h"
+#import "../include/CSLCircularQueue.h"
 
 
 @interface CSLCircularQueue () {

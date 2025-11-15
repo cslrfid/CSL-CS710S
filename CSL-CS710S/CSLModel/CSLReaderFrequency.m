@@ -5,7 +5,7 @@
 //  Copyright © 2022 Convergence Systems Limited. All rights reserved.
 //
 
-#import "CSLReaderFrequency.h"
+#import "../include/CSLReaderFrequency.h"
 
 @implementation CSLReaderFrequency
 {

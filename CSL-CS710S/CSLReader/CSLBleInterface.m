@@ -5,7 +5,7 @@
 //  Copyright © 2022 Convergence Systems Limited. All rights reserved.
 //
 
-#import "CSLBleInterface.h"
+#import "../include/CSLBleInterface.h"
 
 @interface CSLBleInterface() {
     CBCentralManager * manager;
