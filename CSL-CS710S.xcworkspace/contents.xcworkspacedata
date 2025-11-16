@@ -2,6 +2,12 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "group:/Users/TurtleMac01/Documents/GitHub/CSL-CS710S/CSL-CS710S.xcodeproj">
+      location = "group:CSL-CS710S-Core.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:CSL-CS710S-Library.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:QuickStartDemo.xcodeproj">
    </FileRef>
 </Workspace>
