@@ -11,6 +11,6 @@ Pod::Spec.new do |spec|
 
   spec.platform     = :ios, "13.0"
   spec.source       = { :git => "https://github.com/cslrfid/CSL-CS710S.git", :tag => spec.version.to_s }
-  spec.source_files  = "CSL-CS710S/**/*.{h,m}"
-  spec.public_header_files = "CSL-CS710S/include/*.h"
+  spec.source_files  = "CSL-CS710S-Core/**/*.{h,m}"
+  spec.public_header_files = "CSL-CS710S-Core/include/*.h"
 end
