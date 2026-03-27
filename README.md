@@ -47,6 +47,8 @@ Complete SwiftUI demo application showcasing:
 
 ### Swift Package Manager (Recommended)
 
+![SPM](images/cs710s-spm.png)
+
 **Xcode 13+:**
 
 1. Go to `File` > `Add Packages...`
@@ -256,6 +258,8 @@ extension ViewController: TriggerDelegate {
 ```
 
 ## Quick Start - Objective-C Core SDK
+
+![quickstart](images/cs710s-ios.png)
 
 ### 1. Initialize
 
