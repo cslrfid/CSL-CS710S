@@ -259,8 +259,6 @@ extension ViewController: TriggerDelegate {
 
 ## Quick Start - Objective-C Core SDK
 
-![quickstart](images/cs710s-ios.png)
-
 ### 1. Initialize
 
 ```objective-c
@@ -387,6 +385,8 @@ Automatic frequency configuration for:
 - And more...
 
 ## QuickStart Demo
+
+![quickstart](images/cs710s-ios.png)
 
 The demo app demonstrates complete RFID workflows:
 
