@@ -139,6 +139,14 @@ public final class RfidManager: NSObject {
             guard let self = self, self.isBarcodeScanActive else { return }
             self.processBarcodeData(barcode)
         }
+
+        // Barcode read failure (incomplete data from BLE packet loss)
+        coreBridge.onBarcodeReadFailure = { [weak self] in
+            guard let self = self, self.isBarcodeScanActive else { return }
+            self.barcodeScanDelegate?.onScanError(
+                RfidError(message: "Barcode read failed: incomplete data (BLE packet loss)",
+                          type: .SCAN_FAILED))
+        }
     }
 
     // MARK: - Public API - Scanning

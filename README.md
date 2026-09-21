@@ -3,7 +3,7 @@
 ![Platform](https://img.shields.io/badge/platform-iOS%2013.0%2B-blue.svg)
 ![Languages](https://img.shields.io/badge/languages-Swift%20%7C%20Objective--C-orange.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
-![Version](https://img.shields.io/badge/version-1.14.0-red.svg)
+![Version](https://img.shields.io/badge/version-1.15.0-red.svg)
 
 Comprehensive iOS SDK for CSL CS108/CS710S RFID handheld readers. Features both low-level Objective-C Core SDK and high-level Swift wrapper library.
 
@@ -426,7 +426,11 @@ See [QuickStartDemo/README.md](QuickStartDemo/README.md) for setup instructions.
 
 ## Version History
 
-### 1.14.0 (Current)
+### 1.15.0 (Current)
+- **Barcode BLE packet-loss detection** - Multi-packet barcode data is now validated against the uplink sequence number (5th BLE header byte); if a packet is dropped (out-of-order sequence) or fails CRC, the partial read is discarded instead of being delivered as a silently truncated barcode
+- **Barcode read failure reporting** - Incomplete reads now surface to the app via `BarcodeScanDelegate.onScanError` ("incomplete data / BLE packet loss")
+
+### 1.14.0
 - **Fixed barcode UTF-8 decoding** - Multi-byte characters (e.g. `×`, accents, curly quotes) from the Newland NLS-EM3296 scan engine are now decoded correctly instead of appearing as mojibake (`√ó`)
 - **Fixed stray ECI prefix on 2D barcodes** - AIM ECI indicators (e.g. `\000026` for ECI 26 / UTF-8) prepended to QR/Aztec/Data Matrix/Maxicode payloads are now stripped instead of leaking into the scanned value
 - **Hardened barcode buffer** - Serialized cross-packet accumulation with fresh-scan reset and length bounds so a partial or corrupted scan can no longer corrupt the next

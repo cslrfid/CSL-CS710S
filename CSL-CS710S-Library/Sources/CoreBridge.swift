@@ -20,6 +20,7 @@ internal class CoreBridge: NSObject {
     var onTriggerChanged: ((Bool) -> Void)?
     var onBatteryUpdate: ((Int) -> Void)?
     var onBarcodeReceived: ((CSLReaderBarcode) -> Void)?
+    var onBarcodeReadFailure: (() -> Void)?
 
     override init() {
         // Get shared app engine instance
@@ -471,6 +472,12 @@ extension CoreBridge: CSLBleReaderDelegate {
     func didReceiveBarcodeData(_ sender: CSLBleReader, scannedBarcode barcode: CSLReaderBarcode) {
         DispatchQueue.main.async { [weak self] in
             self?.onBarcodeReceived?(barcode)
+        }
+    }
+
+    func didFail(toReceiveBarcodeData sender: CSLBleReader) {
+        DispatchQueue.main.async { [weak self] in
+            self?.onBarcodeReadFailure?()
         }
     }
 

@@ -38,5 +38,9 @@
  @return Data in ASCII string
  */
 + (NSString*) convertHexStringToAscii:(NSString*) hexString ;
+/** Clears the cross-packet accumulation buffer.  Called when a barcode BLE packet is
+ lost (out-of-order sequence number) so the partial scan is discarded.
+ */
++ (void) resetAccumulator;
 
 @end
