@@ -126,6 +126,13 @@ typedef NS_ENUM(Byte, QUERYSELECT)
  @param tag Reference to the CSLBleTag object being returned
  */
 - (void) didReceiveTagAccessData: (CSLBleReader *) sender tagReceived:(CSLBleTag*)tag;  //define delegate method to be implemented within another class
+@optional
+/**
+ This will be triggered when a scanned barcode is discarded due to BLE packet loss
+ (out-of-order sequence number) or a CRC failure, i.e. the received data is incomplete.
+ @param sender CSLBleReader object of the connected reader
+ */
+- (void) didFailToReceiveBarcodeData: (CSLBleReader *) sender;
 @end //end protocol
 
 /**

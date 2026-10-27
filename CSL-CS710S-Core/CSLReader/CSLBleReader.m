@@ -4585,7 +4585,9 @@
     
     int datalen;        //data length given on the RFID packet
     int sequenceNumber=0;
-    
+    int barcodeSeqNumber=0;     //last seen barcode (9100) uplink sequence number
+    BOOL barcodeSeqActive=NO;   //YES once a barcode read is being tracked
+
     while (self.bleDevice)  //packet decoding will continue as long as there is a connected device instance
     {
         @autoreleasepool {
@@ -4597,18 +4599,18 @@
                     if ([packet isKindOfClass:[NSNull class]]) {
                         continue;
                     }
-                    
+
                     if (packet.direction==Uplink && packet.deviceId==RFID) {
-                        
+
                         NSLog(@"[decodePacketsInBufferAsync] Current sequence number: %d", sequenceNumber);
-                        
+
                         //validate checksum of packet
                         if (!packet.isCRCPassed) {
                             NSLog(@"[decodePacketsInBufferAsync] Checksum verification failed.  Discarding data in buffer");
                             [rfidPacketBuffer setLength:0];
                             continue;
                         }
-                    
+
                         if ([rfidPacketBuffer length] == 0)
                             sequenceNumber=packet.Reserve;
                         else {
@@ -4621,14 +4623,48 @@
                                 sequenceNumber++;
                         }
                     }
+                    //Barcode data (9100) is split across BLE packets with no total-length
+                    //field, so a lost packet would otherwise be stitched into a silently
+                    //truncated barcode.  Track the uplink sequence number (packet.Reserve)
+                    //across the read and discard it on any gap or CRC failure.
+                    else if (packet.direction==Uplink && packet.deviceId==Barcode &&
+                             packet.payloadLength>=2 &&
+                             [[[CSLBleReader convertDataToHexString:packet.payload] substringToIndex:4] isEqualToString:@"9100"]) {
+                        if (!packet.isCRCPassed) {
+                            NSLog(@"[decodePacketsInBufferAsync] Barcode packet CRC failed.  Discarding read.");
+                            [CSLReaderBarcode resetAccumulator];
+                            [rfidPacketBuffer setLength:0];
+                            barcodeSeqActive=NO;
+                            if ([self.readerDelegate respondsToSelector:@selector(didFailToReceiveBarcodeData:)])
+                                [self.readerDelegate didFailToReceiveBarcodeData:self];
+                            continue;
+                        }
+                        BOOL isGoodReadMarker = (packet.payloadLength == 3);   //9100 + 1-byte marker anchors a new read
+                        if (isGoodReadMarker || !barcodeSeqActive) {
+                            barcodeSeqNumber=packet.Reserve;
+                            barcodeSeqActive=YES;
+                        }
+                        else if (packet.Reserve == ((barcodeSeqNumber+1) & 0xFF)) {
+                            barcodeSeqNumber=packet.Reserve;
+                        }
+                        else {
+                            NSLog(@"[decodePacketsInBufferAsync] Barcode packet loss (expected %d, got %d).  Discarding read.", (barcodeSeqNumber+1) & 0xFF, packet.Reserve);
+                            [CSLReaderBarcode resetAccumulator];
+                            [rfidPacketBuffer setLength:0];
+                            barcodeSeqActive=NO;
+                            if ([self.readerDelegate respondsToSelector:@selector(didFailToReceiveBarcodeData:)])
+                                [self.readerDelegate didFailToReceiveBarcodeData:self];
+                            continue;
+                        }
+                    }
                 }
                 else
                 {
-                    [NSThread sleepForTimeInterval:0.001f];	
+                    [NSThread sleepForTimeInterval:0.001f];
                     continue;
                 }
             }
-            
+
             NSLog(@"[decodePacketsInBufferAsync] RFID Packet buffer before arrival for packet: %@", [rfidPacketBuffer length] == 0 ? @"(EMPTY)" : [CSLBleReader convertDataToHexString:rfidPacketBuffer]);
             //append ble payload to the rfid packet buffer
             if ([rfidPacketBuffer length] == 0) {
@@ -5338,6 +5374,7 @@
                                 [filteredBuffer replaceObjectAtIndex:findIndex withObject:barcode];
                         }
                         [self.readerDelegate didReceiveBarcodeData:self scannedBarcode:barcode];
+                        barcodeSeqActive=NO;    //read delivered; next read re-anchors
                     }
                 }
                 [rfidPacketBuffer setLength:0];
@@ -5371,7 +5408,9 @@
     int mulitbankPacketLen;
     int epcOnlyPacketLen;
     int sequenceNumber=0;
-    
+    int barcodeSeqNumber=0;     //last seen barcode (9100) uplink sequence number
+    BOOL barcodeSeqActive=NO;   //YES once a barcode read is being tracked
+
     while (self.bleDevice)  //packet decoding will continue as long as there is a connected device instance
     {
         @autoreleasepool {
@@ -5385,16 +5424,16 @@
                     }
                     
                     if (packet.direction==Uplink && packet.deviceId==RFID) {
-                        
+
                         NSLog(@"[decodePacketsInBufferAsync] Current sequence number: %d", sequenceNumber);
-                        
+
                         //validate checksum of packet
                         if (!packet.isCRCPassed) {
                             NSLog(@"[decodePacketsInBufferAsync] Checksum verification failed.  Discarding data in buffer");
                             [rfidPacketBuffer setLength:0];
                             continue;
                         }
-                    
+
                         if ([rfidPacketBuffer length] == 0)
                             sequenceNumber=packet.Reserve;
                         else {
@@ -5407,6 +5446,40 @@
                                 sequenceNumber++;
                         }
                     }
+                    //Barcode data (9100) is split across BLE packets with no total-length
+                    //field, so a lost packet would otherwise be stitched into a silently
+                    //truncated barcode.  Track the uplink sequence number (packet.Reserve)
+                    //across the read and discard it on any gap or CRC failure.
+                    else if (packet.direction==Uplink && packet.deviceId==Barcode &&
+                             packet.payloadLength>=2 &&
+                             [[[CSLBleReader convertDataToHexString:packet.payload] substringToIndex:4] isEqualToString:@"9100"]) {
+                        if (!packet.isCRCPassed) {
+                            NSLog(@"[E710DecodePacketsInBufferAsync] Barcode packet CRC failed.  Discarding read.");
+                            [CSLReaderBarcode resetAccumulator];
+                            [rfidPacketBuffer setLength:0];
+                            barcodeSeqActive=NO;
+                            if ([self.readerDelegate respondsToSelector:@selector(didFailToReceiveBarcodeData:)])
+                                [self.readerDelegate didFailToReceiveBarcodeData:self];
+                            continue;
+                        }
+                        BOOL isGoodReadMarker = (packet.payloadLength == 3);   //9100 + 1-byte marker anchors a new read
+                        if (isGoodReadMarker || !barcodeSeqActive) {
+                            barcodeSeqNumber=packet.Reserve;
+                            barcodeSeqActive=YES;
+                        }
+                        else if (packet.Reserve == ((barcodeSeqNumber+1) & 0xFF)) {
+                            barcodeSeqNumber=packet.Reserve;
+                        }
+                        else {
+                            NSLog(@"[E710DecodePacketsInBufferAsync] Barcode packet loss (expected %d, got %d).  Discarding read.", (barcodeSeqNumber+1) & 0xFF, packet.Reserve);
+                            [CSLReaderBarcode resetAccumulator];
+                            [rfidPacketBuffer setLength:0];
+                            barcodeSeqActive=NO;
+                            if ([self.readerDelegate respondsToSelector:@selector(didFailToReceiveBarcodeData:)])
+                                [self.readerDelegate didFailToReceiveBarcodeData:self];
+                            continue;
+                        }
+                    }
                 }
                 else
                 {
@@ -5414,7 +5487,7 @@
                     continue;
                 }
             }
-            
+
             NSLog(@"[decodePacketsInBufferAsync] RFID Packet buffer before arrival for packet: %@", [rfidPacketBuffer length] == 0 ? @"(EMPTY)" : [CSLBleReader convertDataToHexString:rfidPacketBuffer]);
             //append ble payload to the rfid packet buffer
             if ([rfidPacketBuffer length] == 0) {
@@ -6076,6 +6149,7 @@
                                 [filteredBuffer replaceObjectAtIndex:findIndex withObject:barcode];
                         }
                         [self.readerDelegate didReceiveBarcodeData:self scannedBarcode:barcode];
+                        barcodeSeqActive=NO;    //read delivered; next read re-anchors
                     }
                 }
                 [rfidPacketBuffer setLength:0];

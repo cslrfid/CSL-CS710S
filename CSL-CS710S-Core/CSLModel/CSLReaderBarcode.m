@@ -70,14 +70,15 @@ static NSString * const kBarcodeSelfSuffix = @"050111160304";   //6 bytes
 //never-completing scan - reset instead of growing without bound.
 static const NSUInteger kBarcodeMaxHexLength = 65536;   //~32 KB of payload
 
+//Cross-packet accumulation buffer, shared across CSLReaderBarcode instances so that a
+//barcode split over several notification packets can be stitched back together.  It is
+//touched from the background packet-decode thread, so all access is serialised on the
+//class.  It is cleared on every terminal path (complete, corrupted, fresh scan) and by
+//+resetAccumulator when the decode loop detects a dropped BLE packet.
+static NSString* barcodeHexString = @"";
+
 - (NSString*) extractBarcodeFromSerialData {
 
-    //barcodeHexString is a static buffer shared across CSLReaderBarcode instances so
-    //that a barcode split over several notification packets can be stitched back
-    //together.  It is touched from the background packet-decode thread, so all access
-    //is serialised here; it is also cleared on every terminal path (complete,
-    //corrupted, or a fresh scan) so one bad scan can never bleed into the next.
-    static NSString* barcodeHexString = @"";
     @synchronized ([CSLReaderBarcode class]) {
 
         NSString* incoming = [CSLReaderBarcode convertDataToHexString:serialData];
@@ -155,6 +156,15 @@ static const NSUInteger kBarcodeMaxHexLength = 65536;   //~32 KB of payload
     }
 
     return barcodeValue;
+}
+
+//Clears the cross-packet accumulation buffer.  Called by the decode loop when a
+//barcode BLE packet is lost (out-of-order sequence number) so the partial, now
+//unrecoverable, scan is discarded instead of being stitched into corrupted data.
++ (void) resetAccumulator {
+    @synchronized ([CSLReaderBarcode class]) {
+        barcodeHexString = @"";
+    }
 }
 
 //Strips a leading AIM ECI indicator - a backslash (0x5C) followed by six decimal
